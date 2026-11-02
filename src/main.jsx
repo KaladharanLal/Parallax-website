@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Link, useLocation, useParams } from 'react-router-dom';
 import {
@@ -28,6 +28,7 @@ import { events } from './data/events.js';
 import { publicNavigation, portalNavigation } from './data/navigation.js';
 import { formatPrice, checkIncludedSelection, addonTotal } from './utils/pricing.js';
 import { canIncludeEvent } from './utils/eventEligibility.js';
+import ParallaxLogo from './components/ParallaxLogo.jsx';
 import './style.css';
 function App() {
   const [menu, setMenu] = useState(false),
@@ -45,12 +46,13 @@ function App() {
         Skip to content
       </a>
       <header className="nav">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand" aria-label="PARALLAX Home">
           <img
-            src={`${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/Parallax Logo.png`}
+            src={`${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png`}
             alt="PARALLAX"
+            className="brand-logo"
           />
-          <span>ISTE STATE STUDENT CONVENTION</span>
+          <span className="brand-sub">ISTE STATE STUDENT CONVENTION</span>
         </Link>
         <button
           className="menu-toggle"
@@ -132,14 +134,19 @@ function Home({ action }) {
       <section className="hero">
         <div className="hero-grid" />
         <div className="hero-copy">
-          <Eyebrow>ISTE STATE STUDENT CONVENTION · {c.city.toUpperCase()}</Eyebrow>
-          <h1>
-            PARA<span>LL</span>AX<span className="period">.</span>
-          </h1>
+          <div className="hero-brand-lockup">
+            <h1 className="hero-logo-wrapper">
+              <img
+                src={`${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png`}
+                alt="PARALLAX"
+                className="hero-main-logo"
+              />
+            </h1>
+          </div>
           <h2>{c.tagline}</h2>
           <p className="hero-description">
-            Two days of ideas, making and new perspectives. Join the student community at NSS
-            College of Engineering, Palakkad.
+            Two days of technology, innovation and new perspectives hosted at NSS College of
+            Engineering, Palakkad.
           </p>
           <div className="hero-actions">
             <Link className="button primary" to="/events">
@@ -179,13 +186,12 @@ function Home({ action }) {
             <CalendarDays size={15} /> Dates to be announced
           </span>
           <span>
-            Scroll to explore <ArrowDownRight size={15} />
+            <Users size={15} /> ISTE State Student Convention
           </span>
         </div>
       </section>
       <section className="intro section">
         <div>
-          <Eyebrow>THE CONVENTION</Eyebrow>
           <h2>
             One gathering.
             <br />
@@ -208,7 +214,6 @@ function Home({ action }) {
           ₹<b>500</b>
         </div>
         <div>
-          <Eyebrow>ONE PASS · TWO DAYS</Eyebrow>
           <h2>Your convention starts here.</h2>
           <p>
             Every participant needs a ₹500 pass. It includes lunch both days and lets you choose up
@@ -223,7 +228,6 @@ function Home({ action }) {
       <section className="section event-section">
         <div className="section-heading">
           <div>
-            <Eyebrow>MAKE YOUR MOVE</Eyebrow>
             <h2>Find your kind of challenge.</h2>
           </div>
           <Link className="text-link" to="/events">
@@ -240,14 +244,14 @@ function Home({ action }) {
       </section>
       <section className="facts section">
         <div className="fact">
-          <span>01 — FORMAT</span>
+          <span>01 / FORMAT</span>
           <b>
             Individual
             <br />& team events
           </b>
         </div>
         <div className="fact">
-          <span>02 — DURATION</span>
+          <span>02 / DURATION</span>
           <b>
             Two days
             <br />
@@ -255,7 +259,7 @@ function Home({ action }) {
           </b>
         </div>
         <div className="fact">
-          <span>03 — WHEN</span>
+          <span>03 / WHEN</span>
           <b>
             Dates to be
             <br />
@@ -263,7 +267,7 @@ function Home({ action }) {
           </b>
         </div>
         <div className="fact">
-          <span>04 — WHO</span>
+          <span>04 / WHO</span>
           <b>
             Student innovators
             <br />
@@ -272,8 +276,12 @@ function Home({ action }) {
         </div>
       </section>
       <section className="cta section">
-        <div className="cta-mark">
-          P<span>.</span>
+        <div className="cta-mark" aria-hidden="true">
+          <img
+            src={`${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png`}
+            alt=""
+            className="cta-logo-mark"
+          />
         </div>
         <Eyebrow>YOUR NEXT PERSPECTIVE</Eyebrow>
         <h2>
@@ -562,7 +570,7 @@ function PassPage() {
           <Link className="button primary full" to="/portal">
             Preview participant portal <ArrowRight size={16} />
           </Link>
-          <small>Demo only — payment integration not connected</small>
+          <small>Demo only · payment integration not connected</small>
         </article>
         <article className="pass-copy">
           <Eyebrow>HOW PRICING WORKS</Eyebrow>
@@ -694,7 +702,7 @@ function Venue({ action }) {
           </div>
           <button
             className="button ghost"
-            onClick={() => action('Demo only — an approved venue map link has not been supplied.')}
+            onClick={() => action('Demo only · an approved venue map link has not been supplied.')}
           >
             Map link pending
           </button>
@@ -789,12 +797,12 @@ function Contact({ action }) {
         <div>
           <span>OFFICIAL ISTE EMAIL</span>
           <h2>{c.officialEmail}</h2>
-          <p>Placeholder — not a working contact address.</p>
+          <p>Placeholder · not a working contact address.</p>
         </div>
         <button
           className="button ghost"
           onClick={() =>
-            action('Demo only — the official ISTE contact address has not been supplied.')
+            action('Demo only · the official ISTE contact address has not been supplied.')
           }
         >
           Contact details pending
@@ -1000,7 +1008,7 @@ function SelectEvents({ action }) {
             <strong>Demo total {formatPrice(c.passPrice + addonTotal(addons, events))}</strong>
           </div>
           <p className="demo-label">
-            Demo calculation only — payment and registration are not connected.
+            Demo calculation only · payment and registration are not connected.
           </p>
         </div>
         <button
@@ -1008,7 +1016,7 @@ function SelectEvents({ action }) {
           onClick={() =>
             action(
               check.valid
-                ? 'Demo only — your event choices are not saved to a server, and registration is not confirmed.'
+                ? 'Demo only · your event choices are not saved to a server, and registration is not confirmed.'
                 : `Select exactly ${c.includedEventCount} included events to continue.`,
             )
           }
@@ -1077,12 +1085,12 @@ function Profile({ action }) {
         </label>
         <label>
           Student verification
-          <input value="Demo only — not verified" readOnly />
+          <input value="Demo only · not verified" readOnly />
         </label>
         <button
           className="button primary"
           onClick={() =>
-            action('Demo only — authentication and student verification are not connected.')
+            action('Demo only · authentication and student verification are not connected.')
           }
         >
           Preview verification <ArrowRight size={16} />
@@ -1129,7 +1137,7 @@ function Manage({ action }) {
           className="manager-form"
           onSubmit={(e) => {
             e.preventDefault();
-            action('Demo only — management changes are not saved.');
+            action('Demo only · management changes are not saved.');
           }}
         >
           <label>
@@ -1165,7 +1173,7 @@ function Manage({ action }) {
           </label>
           <label>
             Eligibility
-            <input defaultValue="Student status — future verification" />
+            <input defaultValue="Student status · future verification" />
           </label>
           <label>
             Registration status
@@ -1202,7 +1210,7 @@ function Manage({ action }) {
               <span className="pill">Planning preview</span>
               <button
                 aria-label={`Edit ${e.title} demo`}
-                onClick={() => action('Demo only — management changes are not saved.')}
+                onClick={() => action('Demo only · management changes are not saved.')}
               >
                 Edit
               </button>
@@ -1211,7 +1219,7 @@ function Manage({ action }) {
         </div>
         <button
           className="button primary"
-          onClick={() => action('Demo only — new event data is not saved.')}
+          onClick={() => action('Demo only · new event data is not saved.')}
         >
           Add event <Plus size={16} />
         </button>
@@ -1223,8 +1231,12 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-top">
-        <Link to="/" className="footer-brand">
-          PARALLAX<span>.</span>
+        <Link to="/" className="footer-brand" aria-label="PARALLAX Home">
+          <img
+            src={`${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png`}
+            alt="PARALLAX"
+            className="footer-logo"
+          />
         </Link>
         <p>
           A shift in perspective.
@@ -1252,7 +1264,7 @@ function Footer() {
         )}
       </div>
       <div className="footer-bottom">
-        <span>Â© PARALLAX · {c.organizer}</span>
+        <span>© PARALLAX · {c.organizer}</span>
         <span>Prototype only · dates, rules & pricing subject to approval</span>
         <span className="social">
           <span aria-label="Instagram link placeholder">
