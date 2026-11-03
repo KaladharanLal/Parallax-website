@@ -131,12 +131,27 @@ export function Home() {
     [slug],
     { enabled: Boolean(slug) },
   );
+  const fallbackEvents = useAsync(
+    () => publicApi.events(slug, { pageSize: 6 }),
+    [slug],
+    {
+      enabled: Boolean(
+        slug &&
+          featured.data !== null &&
+          Array.isArray(featured.data?.data) &&
+          featured.data.data.length === 0,
+      ),
+    },
+  );
   const news = useAsync(() => publicApi.announcements(slug, { pageSize: 2 }), [slug], {
     enabled: Boolean(slug),
   });
 
   if (!edition) return null;
-  const events = featured.data?.data || [];
+  const events =
+    featured.data?.data && featured.data.data.length > 0
+      ? featured.data.data
+      : fallbackEvents.data?.data || [];
   const announcements = news.data?.data || [];
   const days = Math.max(
     1,
@@ -156,12 +171,22 @@ export function Home() {
             </h1>
           </div>
           <Eyebrow>
-            {edition.organizer} · {edition.host}
+            ISTE Student Chapter · NSSCE Palakkad
           </Eyebrow>
-          <h2>{edition.tagline || edition.name}</h2>
+          <h2>
+            {edition.tagline?.toLowerCase().includes('argued in public') ? (
+              <>
+                Two days of engineering,
+                <br />
+                <em>argued in public.</em>
+              </>
+            ) : (
+              edition.tagline || edition.name
+            )}
+          </h2>
           <p className="hero-description">
-            {days} days of engineering argued in public at {edition.venue}. A single convention
-            pass, one catalogue, and every session in the open.
+            A single convention pass for all {days} days. Full floor access to every keynote,
+            challenge, and workshop with zero gated tracks.
           </p>
           <div className="hero-actions">
             <Button to="/events" icon={ArrowRight}>
@@ -258,9 +283,9 @@ export function Home() {
             </Link>
           }
         />
-        {featured.loading ? (
+        {(featured.loading && !events.length) || (fallbackEvents.loading && !events.length) ? (
           <Loading label="Loading the programme" rows={2} />
-        ) : featured.error ? (
+        ) : featured.error && fallbackEvents.error ? (
           <ErrorBox error={featured.error} onRetry={featured.reload} />
         ) : events.length ? (
           <div className="event-grid">
@@ -585,7 +610,29 @@ export function EventDetail() {
   }
 
   const event = detail.data?.data;
-  if (!event) return null;
+  if (!event) {
+    return (
+      <section className="section not-found">
+        <span className="mono-note">404 / OFF THE MAP</span>
+        <h1>
+          This event is not
+          <br />
+          <em>in the programme.</em>
+        </h1>
+        <p>
+          The event may have been removed or moved in the catalogue.
+        </p>
+        <div className="hero-actions">
+          <Button to="/" icon={ArrowUpRight}>
+            Back to the convention
+          </Button>
+          <Button to="/events" variant="ghost">
+            Browse events
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>

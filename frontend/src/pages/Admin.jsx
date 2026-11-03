@@ -691,7 +691,7 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
             onChange={(event) => set('registrationClosesAt', event.target.value)}
           />
         </Field>
-        <Field label="Status" hint="Set to Published or Open to make it live for participants">
+        <Field label="Status" hint="Must be Published or Open to appear on the public website">
           <select value={form.status} onChange={(event) => set('status', event.target.value)}>
             <option value="published">Published (live and active)</option>
             <option value="open">Open (accepting entries)</option>
@@ -709,32 +709,62 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
         </Field>
       </FieldGrid>
       <Field label="Summary" className="full-span">
-        <textarea rows="2" value={form.summary} onChange={(event) => set('summary', event.target.value)} required />
+        <textarea
+          rows="2"
+          value={form.summary}
+          onChange={(event) => set('summary', event.target.value)}
+          placeholder="Brief 1-2 sentence overview for cards and public previews"
+          required
+        />
       </Field>
-      <Field label="Description (Markdown)" className="full-span">
-        <textarea rows="4" value={form.descriptionMd} onChange={(event) => set('descriptionMd', event.target.value)} />
+      <Field label="Description (Markdown)" className="full-span" hint="Detailed agenda, eligibility, and instructions">
+        <textarea
+          rows="4"
+          value={form.descriptionMd}
+          onChange={(event) => set('descriptionMd', event.target.value)}
+          placeholder="Write in Markdown. Detailed breakdown of the event, schedule, and guidelines..."
+        />
       </Field>
-      <Field label="Rules (Markdown)" className="full-span">
-        <textarea rows="3" value={form.rulesMd} onChange={(event) => set('rulesMd', event.target.value)} />
+      <Field label="Rules (Markdown)" className="full-span" hint="Code of conduct and evaluation criteria">
+        <textarea
+          rows="3"
+          value={form.rulesMd}
+          onChange={(event) => set('rulesMd', event.target.value)}
+          placeholder="1. General guidelines&#10;2. Round structure and timing&#10;3. Judging criteria..."
+        />
       </Field>
-      <Field label="Prizes (Markdown)" className="full-span">
-        <textarea rows="2" value={form.prizesMd} onChange={(event) => set('prizesMd', event.target.value)} />
+      <Field label="Prizes (Markdown)" className="full-span" hint="Cash rewards, certificates, or perks">
+        <textarea
+          rows="2"
+          value={form.prizesMd}
+          onChange={(event) => set('prizesMd', event.target.value)}
+          placeholder="1st Prize: ₹10,000&#10;2nd Prize: ₹5,000&#10;Certificates for all finalists"
+        />
       </Field>
       <div className="toggle-row">
         <Toggle
           checked={form.includedEligible}
           onChange={(value) => set('includedEligible', value)}
           label="Eligible for included selection"
+          hint="Participants can claim this using their base pass allowance"
         />
         <Toggle
           checked={form.isFeatured}
-          onChange={(value) => set('isFeatured', value)}
+          onChange={(value) => {
+            setForm((current) => ({
+              ...current,
+              isFeatured: value,
+              status: value && current.status === 'draft' ? 'published' : current.status,
+            }));
+          }}
           label="Featured on the home page"
+          hint="Highlights this event on the main convention page"
         />
         <Toggle
           checked={form.requiresApproval}
           onChange={(value) => set('requiresApproval', value)}
           label="Requires coordinator approval"
+          hint="Admissions require manual verification before confirmation"
         />
       </div>
       {message ? <InlineMessage tone={message.tone}>{message.text}</InlineMessage> : null}
@@ -917,9 +947,20 @@ export function AdminEvents() {
               {row.isFeatured ? <Badge tone="accent">Featured</Badge> : null}
             </td>
             <td>
-              <button className="table-action" onClick={() => openEdit(row)} disabled={busyId === row.id}>
-                {busyId === row.id ? 'Loading' : 'Edit'}
-              </button>
+              <div style={{ display: 'inline-flex', gap: '8px' }}>
+                <a
+                  href={`/events/${row.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="table-action"
+                  title="View live event page on public site"
+                >
+                  View
+                </a>
+                <button className="table-action" onClick={() => openEdit(row)} disabled={busyId === row.id}>
+                  {busyId === row.id ? 'Loading' : 'Edit'}
+                </button>
+              </div>
             </td>
           </tr>
         ))}

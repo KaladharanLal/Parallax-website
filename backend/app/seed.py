@@ -210,7 +210,7 @@ async def seed_if_empty(db: AsyncSession) -> None:
             slug=EDITION_SLUG,
             name="Parallax 2026",
             hero_headline="Parallax 2026",
-            hero_subtitle="The ISTE Student Convention. Two days of engineering, argued in public.",
+            hero_subtitle="Two days of engineering, argued in public.",
             theme="Engineering in Public",
             organizer="ISTE Student Chapter, NSSCE",
             host="NSS College of Engineering, Palakkad",
