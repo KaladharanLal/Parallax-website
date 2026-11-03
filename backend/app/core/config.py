@@ -210,6 +210,23 @@ class Settings(BaseSettings):
         return self.is_development and self.dev_auth_enabled
 
     @property
+    def allowed_origins(self) -> list[str]:
+        origins = [self.frontend_origin]
+        if self.is_development:
+            dev_variants = [
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:8000",
+                "http://127.0.0.1:8000",
+            ]
+            for v in dev_variants:
+                if v not in origins:
+                    origins.append(v)
+        return origins
+
+    @property
     def supabase_configured(self) -> bool:
         return bool(self.supabase_url and (self.supabase_service_role_key or self.supabase_key))
 

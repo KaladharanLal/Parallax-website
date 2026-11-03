@@ -211,7 +211,7 @@ export function Home() {
 
       <section className="intro section">
         <div>
-          <Eyebrow>THE CONVENTION</Eyebrow>
+          <Eyebrow>The Convention</Eyebrow>
           <h2>
             One gathering.
             <br />
@@ -250,8 +250,8 @@ export function Home() {
 
       <section className="section event-section">
         <SectionHead
-          kicker="THE PROGRAMME"
-          title="Find your kind of challenge."
+          kicker="The Programme"
+          title="Find your kind of challenge"
           action={
             <Link className="text-link" to="/events">
               All events <ArrowRight size={16} strokeWidth={1.5} />
@@ -309,7 +309,7 @@ export function Home() {
 
       {announcements.length ? (
         <section className="section news-section">
-          <SectionHead kicker="BULLETIN" title="From the organisers." />
+          <SectionHead kicker="Bulletin" title="From the organisers" />
           <div className="news-grid">
             {announcements.map((item, index) => (
               <Panel key={item.id} className="news-card rise" style={{ animationDelay: `${index * 80}ms` }}>
@@ -329,7 +329,7 @@ export function Home() {
         <div className="cta-mark" aria-hidden="true">
           <img src={LOGO} alt="" className="cta-logo-mark" />
         </div>
-        <Eyebrow>YOUR NEXT PERSPECTIVE</Eyebrow>
+        <Eyebrow>Your Next Perspective</Eyebrow>
         <h2>
           Make room for
           <br />
@@ -353,7 +353,7 @@ export function About() {
   return (
     <>
       <PageTitle
-        kicker="ABOUT THE EDITION"
+        kicker="About the Edition"
         title={
           <>
             A different angle
@@ -365,7 +365,7 @@ export function About() {
       />
       <section className="section prose-grid">
         <article>
-          <Eyebrow>THE IDEA</Eyebrow>
+          <Eyebrow>The Idea</Eyebrow>
           <h2>Curiosity brings us together.</h2>
           <p>
             Named for the shift in perspective created by a change in viewpoint, {edition.name}{' '}
@@ -398,7 +398,7 @@ export function About() {
         </article>
         <article className="host-card">
           <img src={NSSCE} alt={`${edition.host} emblem`} />
-          <Eyebrow>HOST INSTITUTION</Eyebrow>
+          <Eyebrow>Host Institution</Eyebrow>
           <h3>{edition.host}</h3>
           <p>{edition.city}</p>
           <div className="host-rule" />
@@ -445,7 +445,7 @@ export function EventsPage() {
   return (
     <>
       <PageTitle
-        kicker="EVENT DIRECTORY"
+        kicker="Event Directory"
         title={
           <>
             Choose your
@@ -604,7 +604,7 @@ export function EventDetail() {
       />
       <section className="section detail-grid">
         <article className="detail-main">
-          <Eyebrow>ABOUT THIS EVENT</Eyebrow>
+          <Eyebrow>About this Event</Eyebrow>
           <h2>{event.title}</h2>
           {event.descriptionHtml ? (
             <div className="rich-text" dangerouslySetInnerHTML={{ __html: event.descriptionHtml }} />
@@ -690,7 +690,7 @@ export function PassPage() {
   return (
     <>
       <PageTitle
-        kicker="CONVENTION PASS"
+        kicker="Convention Pass"
         title={
           <>
             One pass. Two days.
@@ -729,7 +729,7 @@ export function PassPage() {
           </small>
         </article>
         <article className="pass-copy">
-          <Eyebrow>HOW PRICING WORKS</Eyebrow>
+          <Eyebrow>How Pricing Works</Eyebrow>
           <h2>
             Pass first.
             <br />
@@ -795,7 +795,7 @@ export function SchedulePage() {
   return (
     <>
       <PageTitle
-        kicker="THE PROGRAMME"
+        kicker="The Programme"
         title={
           <>
             Two days of
@@ -843,7 +843,7 @@ export function VenuePage() {
   return (
     <>
       <PageTitle
-        kicker="THE VENUE"
+        kicker="The Venue"
         title={
           <>
             Meet us at
@@ -887,7 +887,7 @@ export function VenuePage() {
           </div>
         </article>
         <article className="venue-copy">
-          <Eyebrow>HOST CAMPUS</Eyebrow>
+          <Eyebrow>Host Campus</Eyebrow>
           <h2>{edition.host}</h2>
           <p>{edition.city}</p>
           <p>
@@ -982,7 +982,7 @@ export function FAQPage() {
   return (
     <>
       <PageTitle
-        kicker="GOOD TO KNOW"
+        kicker="Good to Know"
         title={
           <>
             Questions, meet
@@ -1013,7 +1013,7 @@ export function ContactPage() {
   return (
     <>
       <PageTitle
-        kicker="CONTACT"
+        kicker="Contact"
         title={
           <>
             Let’s get

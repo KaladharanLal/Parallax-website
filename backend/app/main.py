@@ -64,17 +64,29 @@ class OriginCheckMiddleware(BaseHTTPMiddleware):
         ):
             origin = request.headers.get("origin")
             settings = get_settings()
-            if origin and origin.rstrip("/") != settings.frontend_origin:
-                return JSONResponse(
-                    {
-                        "error": {
-                            "code": "ORIGIN_REJECTED",
-                            "message": "Cross-origin request rejected.",
-                            "requestId": request_id_ctx.get(),
-                        }
-                    },
-                    status_code=403,
-                )
+            if origin:
+                origin_clean = origin.rstrip("/")
+                is_allowed = origin_clean in settings.allowed_origins
+                if not is_allowed and settings.is_development:
+                    if (
+                        origin_clean.startswith("http://localhost:")
+                        or origin_clean.startswith("http://127.0.0.1:")
+                        or origin_clean.startswith("https://localhost:")
+                        or origin_clean.startswith("https://127.0.0.1:")
+                    ):
+                        is_allowed = True
+
+                if not is_allowed:
+                    return JSONResponse(
+                        {
+                            "error": {
+                                "code": "ORIGIN_REJECTED",
+                                "message": "Cross-origin request rejected.",
+                                "requestId": request_id_ctx.get(),
+                            }
+                        },
+                        status_code=403,
+                    )
         return await call_next(request)
 
 
@@ -117,15 +129,26 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key", "X-Request-ID"],
-        expose_headers=["X-Request-ID", "Retry-After"],
-        max_age=600,
-    )
+    if settings.is_development:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key", "X-Request-ID"],
+            expose_headers=["X-Request-ID", "Retry-After"],
+            max_age=600,
+        )
+    else:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[settings.frontend_origin],
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key", "X-Request-ID"],
+            expose_headers=["X-Request-ID", "Retry-After"],
+            max_age=600,
+        )
     if settings.host_list and "*" not in settings.host_list:
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.host_list)
     app.add_middleware(BodyLimitMiddleware)
@@ -142,6 +165,7 @@ def create_app() -> FastAPI:
     app.include_router(webhooks.router, prefix="/api/v1")
 
     @app.get("/health/live", tags=["health"])
+    @app.get("/healthz", include_in_schema=False)
     async def live() -> dict:
         return {"status": "ok"}
 

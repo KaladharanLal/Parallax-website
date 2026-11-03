@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
+  LayoutDashboard,
   ArrowUpRight,
   BadgeCheck,
   Calendar,
@@ -105,24 +106,45 @@ export function PortalLayout() {
   return (
     <>
       <PageTitle
-        kicker="PARTICIPANT PORTAL"
-        title={
-          <>
-            Your convention,
-            <br />
-            <em>at a glance.</em>
-          </>
-        }
-        desc={`Signed in as ${user?.email}. Passes, selections and tickets are stored against your account for ${edition.name}.`}
+        kicker="Attendee Portal"
+        title="Your Convention Passes & Bookings"
+        desc={`Signed in as ${user?.email} · Live bookings, selections, and entry tickets for ${edition.name}.`}
         aside={
           <div className="title-badges">
             <Badge tone={user?.studentVerified ? 'good' : 'muted'}>
               {user?.studentVerified ? 'Student verified' : 'Verification open'}
             </Badge>
             {user?.profileComplete ? <Badge tone="accent">Profile complete</Badge> : null}
+            {isStaff ? (
+              <Link to="/manage" className="button ghost small" style={{ fontSize: 11, padding: '4px 8px' }}>
+                Staff Console →
+              </Link>
+            ) : null}
           </div>
         }
       />
+
+      {/* Swipeable Horizontal Tabs on Mobile */}
+      <div className="section" style={{ paddingBottom: 0, paddingTop: 10 }}>
+        <nav className="portal-mobile-tabs" aria-label="Participant portal modules">
+          {PORTAL_NAV.map(([label, to, end]) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) => `portal-mobile-tab-item ${isActive ? 'is-active' : ''}`}
+            >
+              <span>{label}</span>
+            </NavLink>
+          ))}
+          {isStaff ? (
+            <Link to="/manage" className="portal-mobile-tab-item" style={{ color: '#38bdf8' }}>
+              <span>Staff Console ↗</span>
+            </Link>
+          ) : null}
+        </nav>
+      </div>
+
       <section className="section portal-layout">
         <aside className="portal-side">
           <div className="avatar">{initials(user?.fullName)}</div>
@@ -137,7 +159,7 @@ export function PortalLayout() {
               </NavLink>
             ))}
             {isStaff ? (
-              <Link to="/manage">
+              <Link to="/manage" style={{ color: 'var(--cyan)' }}>
                 Staff console
                 <ArrowUpRight size={15} strokeWidth={1.5} />
               </Link>
@@ -160,7 +182,7 @@ function PassStatusCard({ pass, policy }) {
   if (!pass) {
     return (
       <Panel className="portal-banner">
-        <Eyebrow>CONVENTION PASS</Eyebrow>
+        <Eyebrow>Convention Pass</Eyebrow>
         <h2>No pass yet</h2>
         <p>
           Buy the {money(policy?.passPricePaise)} pass to unlock event selection, add-ons and your
@@ -379,7 +401,7 @@ export function PortalPass() {
 
   return (
     <>
-      <SectionHead kicker="CONVENTION PASS" title="One pass. Full access." />
+      <SectionHead kicker="Convention Pass" title="One pass, full access" />
       {pass.loading ? <Loading label="Loading pass" rows={1} /> : null}
       {pass.error ? <ErrorBox error={pass.error} onRetry={pass.reload} /> : null}
       {!pass.loading && passData ? (
@@ -610,7 +632,7 @@ export function PortalSelectEvents() {
 
   return (
     <>
-      <SectionHead kicker="STEP 02" title="Build your event lineup." />
+      <SectionHead kicker="Step 2" title="Build your event lineup" />
       <div className="selector-note">
         <Ticket size={18} strokeWidth={1.4} />
         <p>
@@ -760,7 +782,7 @@ export function PortalRegistrations() {
   return (
     <>
       <SectionHead
-        kicker="SELECTION RECORD"
+        kicker="Selection Record"
         title="My registrations"
         action={
           <Button to="/portal/select-events" variant="ghost" icon={Plus}>
@@ -859,8 +881,8 @@ export function PortalTickets() {
   return (
     <>
       <SectionHead
-        kicker="ENTRY CREDENTIALS"
-        title="Your official convention pass."
+        kicker="Entry Credentials"
+        title="Your official convention pass"
         action={
           rows.length ? (
             <Button variant="light" onClick={printBadge} icon={Printer}>
@@ -1051,7 +1073,7 @@ export function PortalTeams() {
 
   return (
     <>
-      <SectionHead kicker="TEAM EVENTS" title="Teams and invites." />
+      <SectionHead kicker="Team Events" title="Teams and invites" />
       <p className="muted">
         {policy?.teamMembersRequirePass
           ? 'Every member needs an active convention pass before joining.'
@@ -1252,7 +1274,7 @@ export function PortalVerification() {
 
   return (
     <>
-      <SectionHead kicker="STUDENT STATUS" title="Verification." />
+      <SectionHead kicker="Student Status" title="Verification" />
       {verification.loading ? <Loading label="Loading verification" rows={1} /> : null}
       {verification.error ? <ErrorBox error={verification.error} onRetry={verification.reload} /> : null}
       {status ? (
@@ -1405,7 +1427,7 @@ export function PortalProfile() {
   return (
     <>
       <SectionHead
-        kicker="ACCOUNT"
+        kicker="Account"
         title="Profile and sessions"
         action={<StatusBadge status={user?.profileComplete ? 'complete' : 'incomplete'} />}
       />

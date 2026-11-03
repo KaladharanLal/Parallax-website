@@ -687,6 +687,16 @@ async def registrations(
         stmt = stmt.where(Registration.event_id == event_id)
     if status:
         stmt = stmt.where(Registration.status == status)
+    if q and q.strip():
+        term = f"%{q.strip().lower()}%"
+        stmt = stmt.where(
+            or_(
+                func.lower(User.full_name).like(term),
+                func.lower(User.email).like(term),
+                func.lower(Registration.registration_number).like(term),
+                func.lower(Event.title).like(term),
+            )
+        )
     rows = list((await db.execute(stmt.order_by(Registration.created_at.desc()).limit(100))).all())
     return {
         "data": [

@@ -95,12 +95,12 @@ class EventUpsert(CamelModel):
     included_eligible: bool = True
     addon_price_paise: int = 0
     addon_charge_basis: str = Field(default="per_participant", pattern="^(per_participant|per_team)$")
-    team_fee_basis: str = Field(default="per_participant", pattern="^(per_team|per_participant)$")
+    team_fee_basis: str | None = Field(default="per_participant")
     capacity: int = 50
     capacity_unit: str = Field(default="participants", pattern="^(participants|entries)$")
     starts_at: datetime
     ends_at: datetime
-    venue_room: str | None = None
+    venue_room: str | None = ""
     registration_opens_at: datetime | None = None
     registration_closes_at: datetime | None = None
     requires_approval: bool = False

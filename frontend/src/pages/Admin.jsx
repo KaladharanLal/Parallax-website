@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Navigate, NavLink, Outlet } from 'react-router-dom';
+import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
+  ArrowUpRight,
   BadgeCheck,
   CalendarDays,
   LayoutDashboard,
@@ -9,8 +10,12 @@ import {
   CreditCard,
   FileText,
   Image,
+  LogOut,
   Megaphone,
+  Menu,
   Plus,
+  RefreshCw,
+  Search,
   Settings,
   ShieldCheck,
   Ticket,
@@ -18,7 +23,10 @@ import {
   Upload,
   Users,
   Wallet,
+  X,
 } from 'lucide-react';
+
+const LOGO = String(import.meta.env.BASE_URL) + 'images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png';
 import { adminApi, publicApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useSite } from '../lib/site.jsx';
@@ -83,49 +91,152 @@ const ACCENTS = ['cyan', 'amber', 'violet', 'lime', 'rose', 'ice'];
 export function AdminLayout() {
   const { isStaff, roles, user, logout } = useAuth();
   const { edition } = useSite();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
   if (!isStaff) return <Navigate to="/portal" replace />;
+
   return (
-    <>
-      <PageTitle
-        kicker="STAFF CONSOLE"
-        title={
-          <>
-            Run the convention
-            <br />
-            <em>from one console.</em>
-          </>
-        }
-        desc={`${edition.name} · live records only. Every write is authenticated, permission-checked and written to the audit log.`}
-        aside={
-          <div className="title-badges">
-            <Badge tone="accent">{ROLE_LABELS[roles[0]] || 'Staff'}</Badge>
-            <Badge>{user?.email}</Badge>
-            <button className="text-link" onClick={logout}>
-              Sign out
+    <div className="admin-shell">
+      {/* Dedicated Admin Header */}
+      <header className="admin-header">
+        <div className="admin-brand-lockup">
+          <Link to="/manage" className="admin-brand-link" aria-label="Staff operations home">
+            <img src={LOGO} alt={edition?.name || 'Parallax'} className="admin-brand-logo" />
+            <span className="admin-brand-name">PARALLAX</span>
+          </Link>
+          <span className="admin-badge-console">Staff Console</span>
+          {edition?.name ? <span className="admin-edition-chip">{edition.name}</span> : null}
+        </div>
+
+        <nav className="admin-header-nav" aria-label="Staff navigation shortcuts">
+          {/* Switch to Participant Portal */}
+          <Link to="/portal" className="admin-link-pill" title="Open participant portal">
+            <Users size={14} strokeWidth={1.6} />
+            <span className="hide-xs">Participant Portal</span>
+          </Link>
+
+          {/* Switch to Public Site */}
+          <Link to="/" className="admin-link-pill" title="View live convention website">
+            <ArrowUpRight size={14} strokeWidth={1.6} />
+            <span className="hide-xs">Live Site</span>
+          </Link>
+
+          {/* Staff Identity Pill */}
+          <div className="admin-user-pill">
+            <span className="admin-role-tag">{ROLE_LABELS[roles[0]] || 'Staff'}</span>
+            <span className="admin-user-email">{user?.email}</span>
+          </div>
+
+          {/* Sign Out */}
+          <button className="admin-signout-btn" onClick={logout} title="Sign out of staff account">
+            <LogOut size={14} strokeWidth={1.6} />
+            <span className="hide-sm">Sign out</span>
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="admin-mobile-menu-btn"
+            onClick={() => setMobileNavOpen((open) => !open)}
+            aria-label={mobileNavOpen ? 'Close staff menu' : 'Open staff menu'}
+            aria-expanded={mobileNavOpen}
+          >
+            {mobileNavOpen ? <X size={18} strokeWidth={1.8} /> : <Menu size={18} strokeWidth={1.8} />}
+          </button>
+        </nav>
+      </header>
+
+      {/* Horizontal Swipeable Mobile Tabs */}
+      <nav className="admin-mobile-tabs" aria-label="Staff quick modules">
+        {NAV.map(([label, to, Icon, end]) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) => `admin-mobile-tab-item ${isActive ? 'is-active' : ''}`}
+          >
+            <Icon size={13} strokeWidth={1.6} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Mobile Drawer (Accessible full list) */}
+      {mobileNavOpen ? (
+        <div className="admin-mobile-drawer" role="dialog" aria-modal="true" aria-label="Staff modules">
+          <div className="admin-drawer-header">
+            <span>Staff Console Modules</span>
+            <button
+              className="admin-drawer-close-btn"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close menu"
+            >
+              <X size={18} strokeWidth={1.8} />
             </button>
           </div>
-        }
-      />
-      <section className="section admin-layout">
-        <aside className="admin-side">
-          <nav aria-label="Staff console">
+          <div className="admin-drawer-links">
             {NAV.map(([label, to, Icon, end]) => (
-              <NavLink key={to} to={to} end={end} className={({ isActive }) => (isActive ? 'active' : '')}>
-                <span>
-                  <Icon size={15} strokeWidth={1.5} /> {label}
-                </span>
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => setMobileNavOpen(false)}
+                className={({ isActive }) => `admin-drawer-item ${isActive ? 'is-active' : ''}`}
+              >
+                <Icon size={15} strokeWidth={1.6} />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </div>
+          <div className="admin-drawer-footer">
+            <div className="admin-drawer-user">
+              <b>{user?.email}</b>
+              <small>{ROLE_LABELS[roles[0]] || 'Staff'}</small>
+            </div>
+            <button className="admin-signout-btn" onClick={logout}>
+              <LogOut size={14} /> <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Main Admin Body */}
+      <div className="admin-body">
+        <aside className="admin-desktop-sidebar">
+          <div className="admin-sidebar-header">
+            <span className="admin-sidebar-heading">Operations</span>
+            <span className="admin-sidebar-meta">12 modules</span>
+          </div>
+          <nav className="admin-desktop-nav" aria-label="Staff navigation">
+            {NAV.map(([label, to, Icon, end]) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) => `admin-sidebar-link ${isActive ? 'is-active' : ''}`}
+              >
+                <Icon size={15} strokeWidth={1.5} />
+                <span>{label}</span>
               </NavLink>
             ))}
           </nav>
-          <p className="admin-side-note">
-            Dev staff account. Staff management and icon library live under Settings.
-          </p>
+          <div className="admin-sidebar-footer">
+            <div className="admin-system-status">
+              <span className="status-live-dot" />
+              <span>Live Audit & RBAC Active</span>
+            </div>
+          </div>
         </aside>
-        <div className="admin-main">
+
+        <main className="admin-content-area" id="admin-main">
           <Outlet />
-        </div>
-      </section>
-    </>
+        </main>
+      </div>
+    </div>
   );
 }
 
@@ -134,13 +245,24 @@ export function AdminOverview() {
   const stats = useAsync(() => adminApi.overview(editionId), [editionId], { enabled: Boolean(editionId) });
   const data = stats.data?.data;
 
-  if (stats.loading) return <Loading label="Loading dashboard" rows={3} />;
+  if (stats.loading) return <Loading label="Loading operational telemetry" rows={3} />;
   if (stats.error) return <ErrorBox error={stats.error} onRetry={stats.reload} />;
 
   const recent = data?.recentRegistrations || [];
 
   return (
     <>
+      <div className="admin-page-header">
+        <div className="admin-page-header-text">
+          <Eyebrow>Operations Telemetry</Eyebrow>
+          <h1>Convention Overview</h1>
+          <p>Real-time metrics, ticketing volume, capacity, and door check-in status.</p>
+        </div>
+        <Button variant="ghost" onClick={stats.reload} icon={RefreshCw}>
+          Refresh
+        </Button>
+      </div>
+
       <div className="stat-grid">
         <Stat label="PASSES SOLD" value={data?.passesSold ?? 0} note={`${data?.passesPending ?? 0} pending`} />
         <Stat label="REVENUE" value={money(data?.revenuePaise || 0)} note={`${money(data?.refundedPaise || 0)} refunded`} />
@@ -149,13 +271,13 @@ export function AdminOverview() {
           value={data?.registrationsConfirmed ?? 0}
           note={`${data?.registrationsPending ?? 0} pending`}
         />
-        <Stat label="CHECKED IN" value={data?.checkedIn ?? 0} note="Across both days" />
+        <Stat label="CHECKED IN" value={data?.checkedIn ?? 0} note="Across both convention days" />
         <Stat
           label="EVENTS"
           value={`${data?.eventsPublished ?? 0} / ${data?.eventsTotal ?? 0}`}
-          note="Published / total"
+          note="Published / total catalogue"
         />
-        <Stat label="SEATS" value={`${data?.seatsTaken ?? 0} / ${data?.seatsCapacity ?? 0}`} note="Taken / capacity" />
+        <Stat label="SEATS TAKEN" value={`${data?.seatsTaken ?? 0} / ${data?.seatsCapacity ?? 0}`} note="Taken / capacity" />
         <Stat
           label="VERIFICATIONS"
           value={data?.verificationsPending ?? 0}
@@ -163,23 +285,23 @@ export function AdminOverview() {
           tone={data?.verificationsPending ? 'warn' : ''}
         />
         <Stat
-          label="SALES BY DAY"
-          value={(data?.salesByDay || []).length ? money((data.salesByDay.at(-1)?.amountPaise) || 0) : '-'}
-          note="Latest recorded day"
+          label="LATEST DAY SALES"
+          value={(data?.salesByDay || []).length ? money((data.salesByDay.at(-1)?.amountPaise) || 0) : '₹0'}
+          note="Recorded on latest day"
         />
       </div>
 
       <div className="portal-columns">
         <Panel>
           <div className="panel-head-row">
-            <Eyebrow>RECENT REGISTRATIONS</Eyebrow>
+            <Eyebrow>Recent Registrations</Eyebrow>
             <NavLink className="text-link" to="/manage/registrations">
-              All registrations
+              All registrations →
             </NavLink>
           </div>
           {recent.length ? (
             <div className="registration-list">
-              {recent.slice(0, 6).map((row, index) => (
+              {recent.slice(0, 8).map((row, index) => (
                 <div className="registration-row" key={`${row.id || row.registrationNumber || index}`}>
                   <span className="event-dot" />
                   <div>
@@ -195,22 +317,25 @@ export function AdminOverview() {
           )}
         </Panel>
         <Panel>
-          <Eyebrow>QUICK ACTIONS</Eyebrow>
+          <Eyebrow>Quick Operational Actions</Eyebrow>
           <div className="quick-links">
-            <Button to="/manage/events" variant="ghost" icon={CalendarDays}>
-              Publish an event
-            </Button>
-            <Button to="/manage/policy" variant="ghost" icon={ShieldCheck}>
-              Review pricing policy
-            </Button>
             <Button to="/manage/check-in" variant="ghost" icon={ClipboardCheck}>
-              Open check-in desk
+              Open Check-in Door Desk
+            </Button>
+            <Button to="/manage/registrations" variant="ghost" icon={Ticket}>
+              Browse & Search Registrations
+            </Button>
+            <Button to="/manage/events" variant="ghost" icon={CalendarDays}>
+              Manage Event Catalogue
             </Button>
             <Button to="/manage/verifications" variant="ghost" icon={BadgeCheck}>
-              Review verifications
+              Review Student ID Verifications
+            </Button>
+            <Button to="/manage/policy" variant="ghost" icon={ShieldCheck}>
+              Update Pricing & Pass Policy
             </Button>
             <Button to="/manage/settings" variant="ghost" icon={Settings}>
-              Edition settings
+              Convention Edition Settings
             </Button>
           </div>
         </Panel>
@@ -233,7 +358,7 @@ function formFromEvent(item) {
       addonPrice: '',
       capacity: 50,
       capacityUnit: 'participants',
-      status: 'draft',
+      status: 'published',
       accent: 'cyan',
       startsAt: '',
       endsAt: '',
@@ -285,7 +410,11 @@ function formFromEvent(item) {
 }
 
 function EventForm({ editionId, categories, initial, onDone, onClose }) {
-  const [form, setForm] = useState(() => formFromEvent(initial));
+  const [form, setForm] = useState(() => {
+    const f = formFromEvent(initial);
+    if (!f.categoryId && categories?.[0]?.id) f.categoryId = categories[0].id;
+    return f;
+  });
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
   const [iconsList, setIconsList] = useState([]);
@@ -349,12 +478,12 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
         includedEligible: form.includedEligible,
         addonPricePaise: paise(form.addonPrice),
         addonChargeBasis: form.addonChargeBasis,
-        teamFeeBasis: form.teamFeeBasis,
+        teamFeeBasis: form.teamFeeBasis || 'per_participant',
         capacity: Number(form.capacity) || 0,
         capacityUnit: form.capacityUnit,
         startsAt: fromLocalInput(form.startsAt),
         endsAt: fromLocalInput(form.endsAt),
-        venueRoom: form.venueRoom || null,
+        venueRoom: form.venueRoom?.trim() || '',
         registrationOpensAt: fromLocalInput(form.registrationOpensAt) || fromLocalInput(form.startsAt),
         registrationClosesAt: fromLocalInput(form.registrationClosesAt) || fromLocalInput(form.startsAt),
         requiresApproval: form.requiresApproval,
@@ -437,7 +566,7 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
             ))}
           </select>
         </Field>
-        <Field label="Event Icon / Artwork" hint="Select from catalog or upload an image file">
+        <Field label="Event Icon / Artwork" hint="Select from catalog or upload an image file" className="full-span">
           <div className="icon-selector-wrap">
             <div className="icon-preview-box">
               {form.iconId ? (
@@ -562,13 +691,13 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
             onChange={(event) => set('registrationClosesAt', event.target.value)}
           />
         </Field>
-        <Field label="Status">
+        <Field label="Status" hint="Set to Published or Open to make it live for participants">
           <select value={form.status} onChange={(event) => set('status', event.target.value)}>
-            {['draft', 'published', 'open', 'closed', 'cancelled'].map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
+            <option value="published">Published (live and active)</option>
+            <option value="open">Open (accepting entries)</option>
+            <option value="draft">Draft (hidden from public)</option>
+            <option value="closed">Closed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </Field>
         <Field label="Sort order">
@@ -582,13 +711,13 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
       <Field label="Summary" className="full-span">
         <textarea rows="2" value={form.summary} onChange={(event) => set('summary', event.target.value)} required />
       </Field>
-      <Field label="Description (Markdown)">
+      <Field label="Description (Markdown)" className="full-span">
         <textarea rows="4" value={form.descriptionMd} onChange={(event) => set('descriptionMd', event.target.value)} />
       </Field>
-      <Field label="Rules (Markdown)">
+      <Field label="Rules (Markdown)" className="full-span">
         <textarea rows="3" value={form.rulesMd} onChange={(event) => set('rulesMd', event.target.value)} />
       </Field>
-      <Field label="Prizes (Markdown)">
+      <Field label="Prizes (Markdown)" className="full-span">
         <textarea rows="2" value={form.prizesMd} onChange={(event) => set('prizesMd', event.target.value)} />
       </Field>
       <div className="toggle-row">
@@ -899,7 +1028,20 @@ export function AdminPolicy() {
     setBusy(true);
     setMessage(null);
     try {
-      await adminApi.createPolicy(editionId, payloadFrom());
+      const payload = payloadFrom();
+      if (!check?.ok) {
+        const checkRes = await adminApi.checkPolicy(editionId, payload);
+        setCheck(checkRes.data);
+        if (!checkRes.data?.ok) {
+          setMessage({
+            tone: 'error',
+            text: 'Policy check found blocking issues. Please resolve before publishing.',
+          });
+          setBusy(false);
+          return;
+        }
+      }
+      await adminApi.createPolicy(editionId, payload);
       await policies.reload();
       setCheck(null);
       setMessage({ tone: 'success', text: 'New policy version published.' });
@@ -1015,8 +1157,8 @@ export function AdminPolicy() {
           <Button variant="ghost" onClick={validate} disabled={busy}>
             Run policy check
           </Button>
-          <Button onClick={publish} disabled={busy || !check?.ok} icon={Check}>
-            Publish version
+          <Button onClick={publish} disabled={busy} icon={Check}>
+            {check?.ok ? 'Publish version' : 'Check & publish'}
           </Button>
         </div>
       </Panel>
@@ -1043,16 +1185,27 @@ export function AdminPolicy() {
 export function AdminRegistrations() {
   const { editionId } = useSite();
   const [status, setStatus] = useState('');
-  const rows = useAsync(() => adminApi.registrations(editionId, { status }), [editionId, status], {
-    enabled: Boolean(editionId),
-  });
+  const [query, setQuery] = useState('');
+  const debounced = useDebounced(query);
+  const rows = useAsync(
+    () => adminApi.registrations(editionId, { status, q: debounced }),
+    [editionId, status, debounced],
+    { enabled: Boolean(editionId) }
+  );
   const list = rows.data?.data || [];
 
   return (
     <>
-      <SectionHead kicker="RECORDS" title="Registrations" />
+      <SectionHead kicker="Records" title="Registrations" />
       <div className="table-filters">
-        <Field label="Status">
+        <Field label="Search participant or registration">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name, email, PX-..., or event title..."
+          />
+        </Field>
+        <Field label="Status filter">
           <select value={status} onChange={(event) => setStatus(event.target.value)}>
             <option value="">All statuses</option>
             {['confirmed', 'reserved', 'pending', 'cancelled'].map((value) => (
@@ -1062,14 +1215,14 @@ export function AdminRegistrations() {
             ))}
           </select>
         </Field>
-        <Button variant="ghost" onClick={rows.reload}>
+        <Button variant="ghost" onClick={rows.reload} icon={RefreshCw}>
           Refresh
         </Button>
       </div>
       {rows.loading ? <Loading label="Loading registrations" rows={2} /> : null}
       {rows.error ? <ErrorBox error={rows.error} onRetry={rows.reload} /> : null}
       <DataTable
-        head={['Number', 'Participant', 'Event', 'Kind', 'Fee', 'Status', 'Created']}
+        head={['Reg #', 'Participant', 'Event', 'Kind', 'Fee', 'Status', 'Date']}
         empty={!list.length && !rows.loading ? 'No registrations match.' : null}
       >
         {list.map((row) => (
@@ -1258,7 +1411,27 @@ export function AdminVerifications() {
             <td className="row-actions">
               {row.documentName ? (
                 <button className="table-action" onClick={() => openDocument(row.id)}>
-                  Document
+                  View Document
+                </button>
+              ) : null}
+              {row.status === 'pending' ? (
+                <button
+                  className="table-action"
+                  style={{ color: '#22c55e' }}
+                  onClick={async () => {
+                    try {
+                      await adminApi.decideVerification(editionId, row.id, {
+                        decision: 'verified',
+                        reason: 'Approved via quick action',
+                      });
+                      await rows.reload();
+                      setMessage({ tone: 'success', text: `Verified student: ${row.fullName}` });
+                    } catch (err) {
+                      setMessage({ tone: 'error', text: err.message });
+                    }
+                  }}
+                >
+                  Quick Approve
                 </button>
               ) : null}
               <button
@@ -1269,7 +1442,7 @@ export function AdminVerifications() {
                   setReason(row.rejectionReason || '');
                 }}
               >
-                Decide
+                Review
               </button>
             </td>
           </tr>
@@ -1485,14 +1658,24 @@ export function AdminCheckin() {
           <Field label="Convention day">
             <input type="date" value={day} onChange={(event) => setDay(event.target.value)} />
           </Field>
-          <Button type="submit" disabled={busy || token.trim().length < 8} icon={ClipboardCheck}>
+          <Button type="submit" disabled={busy || !token.trim()} icon={ClipboardCheck}>
             {busy ? 'Checking' : 'Admit participant'}
           </Button>
         </form>
         {message ? <InlineMessage tone={message.tone}>{message.text}</InlineMessage> : null}
         {result ? (
           <div className={`checkin-result ${result.result}`}>
-            <span>{result.result}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span>{result.result}</span>
+              <button
+                type="button"
+                className="button ghost small"
+                onClick={() => setResult(null)}
+                style={{ fontSize: 11, padding: '4px 8px' }}
+              >
+                Scan next
+              </button>
+            </div>
             <h3>{result.participantName}</h3>
             <p>
               {result.eventTitle || 'Convention pass'} · {result.registrationNumber || 'no registration number'} ·{' '}

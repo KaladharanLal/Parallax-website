@@ -211,11 +211,11 @@ summary:focus-visible {
 .eyebrow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font: 10px var(--mono);
-  letter-spacing: 1.4px;
-  color: var(--muted);
-  text-transform: uppercase;
+  gap: 8px;
+  font: 500 11.5px/1.4 var(--sans);
+  letter-spacing: 0.02em;
+  color: var(--cyan);
+  text-transform: none;
 }
 
 .eyebrow > span {
@@ -461,7 +461,10 @@ summary:focus-visible {
 
 /* SECTIONS */
 .section {
-  padding: 88px 9%;
+  padding: 64px 6%;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .intro {
@@ -480,7 +483,7 @@ summary:focus-visible {
   line-height: 1.15;
   letter-spacing: -0.05em;
   margin: 18px 0;
-  font-weight: 800;
+  font-weight: 700;
   color: #f8fafc;
 }
 
@@ -1852,7 +1855,6 @@ summary:focus-visible {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 32px;
-  max-width: 440px;
   width: 100%;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 }
@@ -1922,6 +1924,10 @@ summary:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .section {
+    padding: 24px 14px;
+  }
+
   .nav {
     height: 64px;
     padding: 0 5%;
