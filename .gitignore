@@ -113,3 +113,4 @@ $RECYCLE.BIN/
 # Temporary / Scratch scripts
 tmp/
 *.tmp
+.claude/skills/

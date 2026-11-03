@@ -131,12 +131,27 @@ export function Home() {
     [slug],
     { enabled: Boolean(slug) },
   );
+  const fallbackEvents = useAsync(
+    () => publicApi.events(slug, { pageSize: 6 }),
+    [slug],
+    {
+      enabled: Boolean(
+        slug &&
+          featured.data !== null &&
+          Array.isArray(featured.data?.data) &&
+          featured.data.data.length === 0,
+      ),
+    },
+  );
   const news = useAsync(() => publicApi.announcements(slug, { pageSize: 2 }), [slug], {
     enabled: Boolean(slug),
   });
 
   if (!edition) return null;
-  const events = featured.data?.data || [];
+  const events =
+    featured.data?.data && featured.data.data.length > 0
+      ? featured.data.data
+      : fallbackEvents.data?.data || [];
   const announcements = news.data?.data || [];
   const days = Math.max(
     1,
@@ -156,12 +171,22 @@ export function Home() {
             </h1>
           </div>
           <Eyebrow>
-            {edition.organizer} · {edition.host}
+            ISTE Student Chapter · NSSCE Palakkad
           </Eyebrow>
-          <h2>{edition.tagline || edition.name}</h2>
+          <h2>
+            {edition.tagline?.toLowerCase().includes('argued in public') ? (
+              <>
+                Two days of engineering,
+                <br />
+                <em>argued in public.</em>
+              </>
+            ) : (
+              edition.tagline || edition.name
+            )}
+          </h2>
           <p className="hero-description">
-            {days} days of engineering argued in public at {edition.venue}. A single convention
-            pass, one catalogue, and every session in the open.
+            A single convention pass for all {days} days. Full floor access to every keynote,
+            challenge, and workshop with zero gated tracks.
           </p>
           <div className="hero-actions">
             <Button to="/events" icon={ArrowRight}>
@@ -211,7 +236,7 @@ export function Home() {
 
       <section className="intro section">
         <div>
-          <Eyebrow>THE CONVENTION</Eyebrow>
+          <Eyebrow>The Convention</Eyebrow>
           <h2>
             One gathering.
             <br />
@@ -250,17 +275,17 @@ export function Home() {
 
       <section className="section event-section">
         <SectionHead
-          kicker="THE PROGRAMME"
-          title="Find your kind of challenge."
+          kicker="The Programme"
+          title="Find your kind of challenge"
           action={
             <Link className="text-link" to="/events">
               All events <ArrowRight size={16} strokeWidth={1.5} />
             </Link>
           }
         />
-        {featured.loading ? (
+        {(featured.loading && !events.length) || (fallbackEvents.loading && !events.length) ? (
           <Loading label="Loading the programme" rows={2} />
-        ) : featured.error ? (
+        ) : featured.error && fallbackEvents.error ? (
           <ErrorBox error={featured.error} onRetry={featured.reload} />
         ) : events.length ? (
           <div className="event-grid">
@@ -309,7 +334,7 @@ export function Home() {
 
       {announcements.length ? (
         <section className="section news-section">
-          <SectionHead kicker="BULLETIN" title="From the organisers." />
+          <SectionHead kicker="Bulletin" title="From the organisers" />
           <div className="news-grid">
             {announcements.map((item, index) => (
               <Panel key={item.id} className="news-card rise" style={{ animationDelay: `${index * 80}ms` }}>
@@ -329,7 +354,7 @@ export function Home() {
         <div className="cta-mark" aria-hidden="true">
           <img src={LOGO} alt="" className="cta-logo-mark" />
         </div>
-        <Eyebrow>YOUR NEXT PERSPECTIVE</Eyebrow>
+        <Eyebrow>Your Next Perspective</Eyebrow>
         <h2>
           Make room for
           <br />
@@ -353,7 +378,7 @@ export function About() {
   return (
     <>
       <PageTitle
-        kicker="ABOUT THE EDITION"
+        kicker="About the Edition"
         title={
           <>
             A different angle
@@ -365,7 +390,7 @@ export function About() {
       />
       <section className="section prose-grid">
         <article>
-          <Eyebrow>THE IDEA</Eyebrow>
+          <Eyebrow>The Idea</Eyebrow>
           <h2>Curiosity brings us together.</h2>
           <p>
             Named for the shift in perspective created by a change in viewpoint, {edition.name}{' '}
@@ -398,7 +423,7 @@ export function About() {
         </article>
         <article className="host-card">
           <img src={NSSCE} alt={`${edition.host} emblem`} />
-          <Eyebrow>HOST INSTITUTION</Eyebrow>
+          <Eyebrow>Host Institution</Eyebrow>
           <h3>{edition.host}</h3>
           <p>{edition.city}</p>
           <div className="host-rule" />
@@ -445,7 +470,7 @@ export function EventsPage() {
   return (
     <>
       <PageTitle
-        kicker="EVENT DIRECTORY"
+        kicker="Event Directory"
         title={
           <>
             Choose your
@@ -585,7 +610,29 @@ export function EventDetail() {
   }
 
   const event = detail.data?.data;
-  if (!event) return null;
+  if (!event) {
+    return (
+      <section className="section not-found">
+        <span className="mono-note">404 / OFF THE MAP</span>
+        <h1>
+          This event is not
+          <br />
+          <em>in the programme.</em>
+        </h1>
+        <p>
+          The event may have been removed or moved in the catalogue.
+        </p>
+        <div className="hero-actions">
+          <Button to="/" icon={ArrowUpRight}>
+            Back to the convention
+          </Button>
+          <Button to="/events" variant="ghost">
+            Browse events
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
@@ -604,7 +651,7 @@ export function EventDetail() {
       />
       <section className="section detail-grid">
         <article className="detail-main">
-          <Eyebrow>ABOUT THIS EVENT</Eyebrow>
+          <Eyebrow>About this Event</Eyebrow>
           <h2>{event.title}</h2>
           {event.descriptionHtml ? (
             <div className="rich-text" dangerouslySetInnerHTML={{ __html: event.descriptionHtml }} />
@@ -690,7 +737,7 @@ export function PassPage() {
   return (
     <>
       <PageTitle
-        kicker="CONVENTION PASS"
+        kicker="Convention Pass"
         title={
           <>
             One pass. Two days.
@@ -729,7 +776,7 @@ export function PassPage() {
           </small>
         </article>
         <article className="pass-copy">
-          <Eyebrow>HOW PRICING WORKS</Eyebrow>
+          <Eyebrow>How Pricing Works</Eyebrow>
           <h2>
             Pass first.
             <br />
@@ -795,7 +842,7 @@ export function SchedulePage() {
   return (
     <>
       <PageTitle
-        kicker="THE PROGRAMME"
+        kicker="The Programme"
         title={
           <>
             Two days of
@@ -843,7 +890,7 @@ export function VenuePage() {
   return (
     <>
       <PageTitle
-        kicker="THE VENUE"
+        kicker="The Venue"
         title={
           <>
             Meet us at
@@ -887,7 +934,7 @@ export function VenuePage() {
           </div>
         </article>
         <article className="venue-copy">
-          <Eyebrow>HOST CAMPUS</Eyebrow>
+          <Eyebrow>Host Campus</Eyebrow>
           <h2>{edition.host}</h2>
           <p>{edition.city}</p>
           <p>
@@ -982,7 +1029,7 @@ export function FAQPage() {
   return (
     <>
       <PageTitle
-        kicker="GOOD TO KNOW"
+        kicker="Good to Know"
         title={
           <>
             Questions, meet
@@ -1013,7 +1060,7 @@ export function ContactPage() {
   return (
     <>
       <PageTitle
-        kicker="CONTACT"
+        kicker="Contact"
         title={
           <>
             Let’s get

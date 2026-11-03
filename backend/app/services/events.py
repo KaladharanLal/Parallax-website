@@ -334,6 +334,20 @@ async def upsert_event(
         event = await db.get(Event, event_id)
         if event is None or event.edition_id != edition_id:
             raise NotFound("Event not found.")
+        new_slug = payload.get("slug", "").strip().lower()
+        if new_slug and new_slug != event.slug:
+            existing = (
+                await db.execute(
+                    select(Event).where(
+                        Event.edition_id == edition_id,
+                        Event.slug == new_slug,
+                        Event.id != event.id,
+                    )
+                )
+            ).scalar_one_or_none()
+            if existing:
+                raise Conflict("An event with that slug already exists.")
+            event.slug = new_slug
     else:
         # Check slug uniqueness
         existing = (
@@ -379,7 +393,12 @@ async def upsert_event(
         "status",
     ]:
         if field in payload:
-            setattr(event, field, payload[field])
+            val = payload[field]
+            if field == "venue_room" and val is None:
+                val = ""
+            elif field == "team_fee_basis" and not val:
+                val = "per_participant"
+            setattr(event, field, val)
 
     await record(
         db,

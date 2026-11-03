@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../lib/auth.jsx';
 import { useSite } from '../lib/site.jsx';
 import { Button, Eyebrow, Field, InlineMessage } from '../components/ui.jsx';
@@ -51,12 +51,8 @@ export default function Login() {
           <img src={LOGO} alt={edition?.name || 'Parallax 2026'} />
         </Link>
         <div>
-          <Eyebrow>PARTICIPANT & STAFF ACCESS</Eyebrow>
-          <h1>
-            Your convention,
-            <br />
-            <em>one sign-in away.</em>
-          </h1>
+          <Eyebrow>Attendee & Staff Portal</Eyebrow>
+          <h1>Convention Sign In</h1>
           <p>
             Passes, included events, add-on registrations, team invites and entry tickets live in
             the portal. Staff credentials open the administrative console.
@@ -66,7 +62,7 @@ export default function Login() {
               <ShieldCheck size={16} strokeWidth={1.5} /> Secure attendee authentication
             </span>
             <span>
-              <Sparkles size={16} strokeWidth={1.5} /> NSSCE Palakkad convention network
+              <CheckCircle2 size={16} strokeWidth={1.5} /> NSSCE Palakkad convention network
             </span>
           </div>
         </div>
@@ -78,8 +74,8 @@ export default function Login() {
       <div className="login-panel">
         <div className="login-card bezel">
           <div className="bezel-core is-padded">
-            <Eyebrow>{isStaff ? 'STAFF ACCESS' : 'SIGN IN'}</Eyebrow>
-            <h2>Welcome back.</h2>
+            <Eyebrow>{isStaffLogin ? 'Staff Access' : 'Sign In'}</Eyebrow>
+            <h2>Access your account</h2>
             <p className="muted">
               {hasGoogle
                 ? 'Continue with your Google account, or sign in using your college email.'
