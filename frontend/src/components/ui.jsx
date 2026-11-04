@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Inbox, LoaderCircle, X } from 'lucide-react';
 
@@ -209,6 +209,38 @@ export function DataTable({ head, children, empty }) {
   );
 }
 
+
+export class SheetErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('Sheet render error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '24px', color: '#f87171', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+          <h3 style={{ margin: '0 0 8px', color: '#fca5a5' }}>Failed to render sheet contents</h3>
+          <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#fecaca' }}>{this.state.error?.message || 'Unknown error occurred while rendering the form.'}</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{ padding: '6px 14px', background: '#ef4444', color: '#fff', border: 0, borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+          >
+            Retry form
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function Sheet({ open, title, onClose, children, wide = false }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -216,9 +248,11 @@ export function Sheet({ open, title, onClose, children, wide = false }) {
     window.addEventListener('keydown', onKey);
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    if (window.__lenis) window.__lenis.stop();
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = previous;
+      if (window.__lenis) window.__lenis.start();
     };
   }, [open, onClose]);
 
@@ -243,7 +277,7 @@ export function Sheet({ open, title, onClose, children, wide = false }) {
             <X size={18} strokeWidth={1.6} />
           </button>
         </header>
-        <div className="sheet-body">{children}</div>
+        <div className="sheet-body" data-lenis-prevent><SheetErrorBoundary>{children}</SheetErrorBoundary></div>
       </section>
     </div>
   );

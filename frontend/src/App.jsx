@@ -5,6 +5,9 @@ import { useAuth } from './lib/auth.jsx';
 import { useSite } from './lib/site.jsx';
 import { ThemeCustomizer } from './lib/theme.jsx';
 import { Button, ErrorBox, Loading } from './components/ui.jsx';
+import { initSmoothScroll, gsap } from './lib/motion.js';
+import { PoiHudTopBar } from './components/PoiHud.jsx';
+import { SamaritanBootLoader } from './components/SamaritanBootLoader.jsx';
 import {
   About,
   ContactPage,
@@ -115,6 +118,7 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const [booted, setBooted] = useState(false);
 
   useEffect(() => {
     setMenu(false);
@@ -122,17 +126,23 @@ export default function App() {
 
   const chromeHidden = location.pathname.startsWith('/manage') || location.pathname === '/login';
 
-  if (site.loading) {
+    const isStartup = location.pathname === '/startup';
+
+  if (isStartup || !booted || site.loading) {
     return (
-      <div className="boot">
-        <img src={LOGO} alt="Parallax" />
-        <span className="boot-line" />
-        <p>Loading the convention</p>
-      </div>
+      <SamaritanBootLoader
+        key={isStartup ? 'startup-forced' : 'startup-init'}
+        onComplete={() => {
+          setBooted(true);
+          if (isStartup) {
+            navigate('/', { replace: true });
+          }
+        }}
+      />
     );
   }
 
-  if (site.error || !site.edition) {
+if (site.error || !site.edition) {
     return (
       <div className="boot boot-error">
         <img src={LOGO} alt="Parallax" />
@@ -152,6 +162,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <div className='site-lensgrid' aria-hidden='true' />
       <a className="skip" href="#main">
         Skip to content
       </a>
@@ -191,6 +202,7 @@ export default function App() {
       <main id="main">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/startup" element={<SamaritanBootLoader onComplete={() => navigate('/', { replace: true })} />} />
           <Route path="/about" element={<About />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:eventSlug" element={<EventDetail />} />

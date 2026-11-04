@@ -26,7 +26,6 @@ import {
   X,
 } from 'lucide-react';
 
-const LOGO = String(import.meta.env.BASE_URL) + 'images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png';
 import { adminApi, publicApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useSite } from '../lib/site.jsx';
@@ -60,6 +59,8 @@ import {
   useAsync,
   useDebounced,
 } from '../components/ui.jsx';
+
+const LOGO = String(import.meta.env.BASE_URL) + 'images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png';
 
 const NAV = [
   ['Overview', '/manage', LayoutDashboard, true],

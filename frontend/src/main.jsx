@@ -7,6 +7,7 @@ import { SiteProvider } from './lib/site.jsx';
 import { ThemeProvider } from './lib/theme.jsx';
 import './style.css';
 import './theme.css';
+import './styles/poi.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
