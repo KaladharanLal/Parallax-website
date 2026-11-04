@@ -1,2 +1,0 @@
-"""Parallax application package."""
-
