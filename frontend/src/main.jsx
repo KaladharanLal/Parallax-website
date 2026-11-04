@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AuthProvider } from './lib/auth.jsx';
 import { SiteProvider } from './lib/site.jsx';
@@ -11,7 +11,7 @@ import './styles/poi.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider>
         <SiteProvider>
           <AuthProvider>
@@ -19,6 +19,6 @@ createRoot(document.getElementById('root')).render(
           </AuthProvider>
         </SiteProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 );
