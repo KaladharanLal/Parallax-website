@@ -4,6 +4,12 @@ PARALLAX is a convention information and operations web application for an ISTE 
 
 The browser app is a client of the backend. The backend is the source of truth for editions, policy, events, participant accounts, passes, registrations, tickets, staff permissions, and operational records. It validates important actions on the server and persists them in the database.
 
+## GitHub Pages
+
+The frontend deploys from `.github/workflows/deploy.yml` when changes are pushed to `main` (or from **Actions → Deploy to GitHub Pages → Run workflow**). In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**. The workflow builds `frontend` and deploys it; client routes use URL hashes so page refreshes work on GitHub Pages project sites.
+
+GitHub Pages hosts static files only. To load convention data or use sign-in, registration, payments, and staff tools, deploy the FastAPI backend separately and add a repository Actions variable named `VITE_API_BASE` with the backend API base URL (for example, `https://api.example.com/api/v1`). Configure that backend's CORS and allowed frontend origin for the GitHub Pages URL. Without a backend, the static site shell loads but API-driven features are unavailable. The workflow derives the project-site asset path from the repository name; set the `VITE_BASE_PATH` Actions variable only if you need to override it (for example, `/` for a custom domain).
+
 > Local development uses seeded demo records and a mock payment path. Do not enter real participant, identity document, or payment information into an unreviewed development environment.
 
 ## What the web app does
