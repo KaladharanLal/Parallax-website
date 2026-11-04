@@ -8,6 +8,13 @@ export const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1';
 let csrfToken = null;
 let unauthorizedHandler = null;
 
+// Concurrent identical reads (React StrictMode double effects, several widgets on
+// one screen) must share a single network request instead of racing each other.
+const GET_INFLIGHT = new Map();
+
+const DEFAULT_TIMEOUT_MS = 25000;
+const UPLOAD_TIMEOUT_MS = 60000;
+
 export class ApiError extends Error {
   constructor(message, { status = 0, code = '', details = null } = {}) {
     super(message);
@@ -51,9 +58,35 @@ function query(params = {}) {
   return qs ? `?${qs}` : '';
 }
 
-export async function api(path, { method = 'GET', body, form, retry = true } = {}) {
+export function api(path, options = {}) {
+  const method = String(options.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    return runRequest(path, { ...options, method });
+  }
+
+  const key = `${method} ${path}`;
+  const pending = GET_INFLIGHT.get(key);
+  if (pending) return pending;
+
+  const request = runRequest(path, { ...options, method }).finally(() => {
+    if (GET_INFLIGHT.get(key) === request) GET_INFLIGHT.delete(key);
+  });
+  GET_INFLIGHT.set(key, request);
+  return request;
+}
+
+async function runRequest(
+  path,
+  { method = 'GET', body, form, retry = true, timeoutMs } = {},
+) {
   const headers = {};
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeout = controller
+    ? setTimeout(() => controller.abort(), timeoutMs ?? (form ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS))
+    : null;
+
   const init = { method, credentials: 'include', headers };
+  if (controller) init.signal = controller.signal;
 
   if (form) {
     init.body = form;
@@ -66,8 +99,24 @@ export async function api(path, { method = 'GET', body, form, retry = true } = {
     headers['X-CSRF-Token'] = csrfToken;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, init);
-  const text = await res.text();
+  let res;
+  let text = '';
+  try {
+    res = await fetch(`${API_BASE}${path}`, init);
+    text = await res.text();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new ApiError('The server took too long to respond. Please try again.', {
+        code: 'TIMEOUT',
+      });
+    }
+    throw new ApiError('Could not reach the convention service. Check your connection and retry.', {
+      code: 'NETWORK',
+    });
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+
   let payload = null;
   if (text) {
     try {
@@ -81,7 +130,8 @@ export async function api(path, { method = 'GET', body, form, retry = true } = {
     const error = payload?.error;
     if (res.status === 403 && error?.code === 'CSRF_INVALID' && retry) {
       await refreshCsrf();
-      return api(path, { method, body, form, retry: false });
+      // Bypass the shared-read map: this is a retry of the same request.
+      return runRequest(path, { method, body, form, retry: false, timeoutMs });
     }
     if (res.status === 401) unauthorizedHandler?.();
     throw new ApiError(error?.message || `Request failed (${res.status})`, {
@@ -157,6 +207,7 @@ export const portalApi = {
 const adminBase = (editionId) => `/editions/${editionId}/admin`;
 
 export const adminApi = {
+  sync: (editionId) => api(`${adminBase(editionId)}/sync`, { method: 'POST' }),
   overview: (editionId) => api(`${adminBase(editionId)}/overview`),
   permissions: (editionId) => api(`${adminBase(editionId)}/my-permissions`),
   settings: (editionId) => api(`${adminBase(editionId)}/settings`),

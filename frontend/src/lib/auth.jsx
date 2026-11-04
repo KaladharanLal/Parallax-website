@@ -2,20 +2,41 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { authApi, onUnauthorized, refreshCsrf, setCsrfToken } from './api.js';
 
 const AuthContext = createContext(null);
+const CACHED_USER_KEY = 'px_cached_user';
+
+function getInitialUser() {
+  try {
+    const raw = localStorage.getItem(CACHED_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(getInitialUser);
+  const [loading, setLoading] = useState(() => !getInitialUser());
 
   const load = useCallback(async () => {
     try {
       const body = await authApi.me();
-      setUser(body?.data || null);
+      const userData = body?.data || null;
+      setUser(userData);
+      if (userData) {
+        localStorage.setItem(CACHED_USER_KEY, JSON.stringify(userData));
+      } else {
+        localStorage.removeItem(CACHED_USER_KEY);
+      }
       await refreshCsrf();
-      return body?.data || null;
-    } catch {
-      setUser(null);
-      setCsrfToken(null);
+      return userData;
+    } catch (err) {
+      // Only clear user session if the backend explicitly returns 401 Unauthorized.
+      // If the server is restarting, offline, or experiencing network timeout, keep cached user session.
+      if (err?.status === 401) {
+        setUser(null);
+        localStorage.removeItem(CACHED_USER_KEY);
+        setCsrfToken(null);
+      }
       return null;
     } finally {
       setLoading(false);
@@ -23,7 +44,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    onUnauthorized(() => setUser(null));
+    onUnauthorized(() => {
+      localStorage.removeItem(CACHED_USER_KEY);
+      setUser(null);
+    });
     load();
   }, [load]);
 
@@ -39,6 +63,7 @@ export function AuthProvider({ children }) {
     try {
       await authApi.logout();
     } finally {
+      localStorage.removeItem(CACHED_USER_KEY);
       setCsrfToken(null);
       setUser(null);
     }
@@ -55,7 +80,7 @@ export function AuthProvider({ children }) {
       reload: load,
       roles,
       isStaff,
-      isSuperAdmin: roles.includes('super_admin'),
+      isSuperAdmin: roles.includes('super_admin') || roles.includes('owner'),
     };
   }, [user, loading, login, logout, load]);
 
