@@ -152,11 +152,13 @@ export default function App() {
     );
   }
 
-  if (site.loading && !site.edition) {
+  // The boot animation already waits for isReady before completing.
+  // On inner-page navigations we still need to wait for the site data.
+  if (site.loading && !site.edition && location.pathname !== '/') {
     return <Loading label="Connecting to Parallax convention…" rows={0} />;
   }
 
-  if (site.error || !site.edition) {
+  if (site.error || (!site.loading && !site.edition)) {
     return (
       <div className="boot boot-error">
         <img src={LOGO} alt="Parallax" />

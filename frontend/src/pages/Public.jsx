@@ -5,17 +5,20 @@ import {
   ArrowUpRight,
   Bot,
   Boxes,
+  Building2,
   CalendarDays,
   Check,
   ChevronDown,
   Clock3,
   Code2,
   Cpu,
+  HelpCircle,
   Mail,
   MapPin,
   Navigation,
   PenTool,
   Search,
+  Send,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
@@ -695,7 +698,7 @@ export function About() {
         desc={`${edition.name} is a ${edition.organizer} convention hosted at ${edition.host}. The programme is published from a single live catalogue.`}
       />
       <section className="section prose-grid">
-        <article>
+        <article className="about-main-card">
           <Eyebrow>The Idea</Eyebrow>
           <h2>Curiosity brings us together.</h2>
           <p>
@@ -906,10 +909,8 @@ export function EventDetail() {
     return (
       <section className="section">
         <ErrorBox error={detail.error} onRetry={detail.reload} title="Event not found" />
-        <div className="center-actions">
-          <Button to="/events" variant="ghost">
-            Back to events
-          </Button>
+        <div className="center-actions" style={{ marginTop: '24px' }}>
+          <Button to="/events" variant="ghost">Back to events</Button>
         </div>
       </section>
     );
@@ -925,55 +926,58 @@ export function EventDetail() {
           <br />
           <em>in the programme.</em>
         </h1>
-        <p>
-          The event may have been removed or moved in the catalogue.
-        </p>
+        <p>The event may have been removed or moved in the catalogue.</p>
         <div className="hero-actions">
-          <Button to="/" icon={ArrowUpRight}>
-            Back to the convention
-          </Button>
-          <Button to="/events" variant="ghost">
-            Browse events
-          </Button>
+          <Button to="/" icon={ArrowUpRight}>Back to the convention</Button>
+          <Button to="/events" variant="ghost">Browse events</Button>
         </div>
       </section>
     );
   }
 
+  const isTeam = event.format === 'team';
+  const accent = getEventAccent(event);
+
   return (
     <>
-      {event.bannerUrl ? (
-        <div className="event-detail-banner-hero">
-          <img src={event.bannerUrl} alt={event.title} className="event-detail-banner-img" />
-          <div className="event-detail-banner-overlay" />
-          <div className="event-detail-banner-content">
-            <span className="event-detail-banner-cat">
-              {event.categoryName.toUpperCase()} · {event.format.toUpperCase()}
-            </span>
-            <h1 className="event-detail-banner-title">{event.title}</h1>
-            <div className="title-badges" style={{ marginTop: '12px' }}>
-              <Badge tone={event.registrationOpen ? 'good' : 'muted'}>
-                {event.registrationOpen ? 'Registration open' : 'Registration closed'}
-              </Badge>
-              {event.isFeatured ? <Badge tone="accent">Featured</Badge> : null}
-            </div>
-          </div>
+      {/* Full-bleed banner — banner image if available, atmospheric fallback otherwise */}
+      <div className="event-detail-hero">
+        <div className="event-detail-hero-bg">
+          {event.bannerUrl ? (
+            <img src={event.bannerUrl} alt="" className="event-detail-hero-img" />
+          ) : (
+            <img src={PARALLAX_BG_VAULT} alt="" className="event-detail-hero-img event-detail-hero-fallback" />
+          )}
+          <div className="event-detail-hero-vignette" />
         </div>
-      ) : (
-        <PageTitle
-        kicker={`${event.categoryName.toUpperCase()} · ${event.format.toUpperCase()}`}
-        title={event.title}
-        desc={event.summary}
-        aside={
-          <div className="title-badges">
+        <div className="event-detail-hero-content">
+          <div className="event-detail-hero-meta">
+            <span className={`apple-cat-dot dot-${accent}`} />
+            <span className="event-detail-hero-cat">{event.categoryName}</span>
+            <span className="event-detail-hero-sep">·</span>
+            <span className="event-detail-hero-format">{isTeam ? `Team · ${event.teamMinSize || 2}–${event.teamMaxSize || 4}` : 'Individual'}</span>
+          </div>
+          <h1 className="event-detail-hero-title">{event.title}</h1>
+          {event.summary ? (
+            <p className="event-detail-hero-desc">{event.summary}</p>
+          ) : null}
+          <div className="event-detail-hero-badges">
             <Badge tone={event.registrationOpen ? 'good' : 'muted'}>
               {event.registrationOpen ? 'Registration open' : 'Registration closed'}
             </Badge>
             {event.isFeatured ? <Badge tone="accent">Featured</Badge> : null}
           </div>
-        }
-      />
-      )}
+        </div>
+      </div>
+
+      {/* Breadcrumb navigation */}
+      <div className="event-detail-breadcrumb">
+        <Link to="/events" className="event-detail-back">
+          <ArrowRight size={13} style={{ transform: 'rotate(180deg)' }} strokeWidth={2} />
+          <span>All events</span>
+        </Link>
+      </div>
+
       <section className="section detail-grid">
         <article className="detail-main">
           <Eyebrow>About this Event</Eyebrow>
@@ -985,7 +989,7 @@ export function EventDetail() {
           )}
           {event.rulesHtml ? (
             <>
-              <h3>Requirements & rules</h3>
+              <h3>Requirements &amp; rules</h3>
               <div className="rich-text" dangerouslySetInnerHTML={{ __html: event.rulesHtml }} />
             </>
           ) : null}
@@ -1001,55 +1005,55 @@ export function EventDetail() {
           </p>
         </article>
         <aside className="detail-card">
+          <span className="detail-card-label">EVENT DETAILS</span>
           <div className="detail-row">
             <span>Format</span>
-            <b>{event.format}</b>
+            <b style={{ textTransform: 'capitalize' }}>{event.format}</b>
           </div>
-          {event.format === 'team' ? (
+          {isTeam ? (
             <div className="detail-row">
               <span>Team size</span>
-              <b>
-                {event.teamMinSize}-{event.teamMaxSize} members
-              </b>
+              <b>{event.teamMinSize}–{event.teamMaxSize} members</b>
             </div>
           ) : null}
           <div className="detail-row">
-            <span>Included base value</span>
+            <span>Included value</span>
             <b>{money(event.baseValuePaise)}</b>
           </div>
           <div className="detail-row">
-            <span>Standalone add-on</span>
+            <span>Add-on fee</span>
             <b>{money(event.addonPricePaise)}</b>
           </div>
           <div className="detail-row">
             <span>Capacity</span>
             <b>
               {event.capacity || 'Unlimited'}
-              {event.seatsLeft !== null && event.seatsLeft !== undefined
-                ? ` · ${event.seatsLeft} left`
-                : ''}
+              {event.seatsLeft != null ? ` · ${event.seatsLeft} left` : ''}
             </b>
           </div>
           <div className="detail-row">
             <span>Schedule</span>
             <b>
-              {date(event.startsAt)} · {time(event.startsAt)} - {time(event.endsAt)}
+              {event.startsAt ? `${date(event.startsAt)} · ${time(event.startsAt)}${event.endsAt ? ` – ${time(event.endsAt)}` : ''}` : 'TBA'}
             </b>
           </div>
           <div className="detail-row">
-            <span>Room</span>
+            <span>Venue</span>
             <b>{event.venueRoom || 'To be announced'}</b>
           </div>
-          <div className="detail-row">
-            <span>Team fee basis</span>
-            <b>{event.teamFeeBasis || event.addonChargeBasis}</b>
-          </div>
-          <p>
-            Every participant still needs the convention pass. Add-on fees never replace it.
+          {(event.teamFeeBasis || event.addonChargeBasis) ? (
+            <div className="detail-row">
+              <span>Fee basis</span>
+              <b>{event.teamFeeBasis || event.addonChargeBasis}</b>
+            </div>
+          ) : null}
+          <p className="detail-card-note">
+            Every participant needs an active convention pass. Add-on fees are charged separately.
           </p>
           <Button to="/portal/select-events" icon={ArrowRight} className="full">
             Plan this in your portal
           </Button>
+          <Link to="/events" className="event-backlink">Back to all events</Link>
         </aside>
       </section>
     </>
@@ -1169,7 +1173,7 @@ export function SchedulePage() {
   const days = schedule.data?.data || [];
 
   const formatTimeSlot = (startIso, endIso) => {
-    if (!startIso) return '';
+    if (!startIso) return 'TBA';
     const s = time(startIso);
     const e = time(endIso);
     if (!e) return s;
@@ -1177,6 +1181,8 @@ export function SchedulePage() {
     const eClean = e.toUpperCase().trim();
     return `${sNum} – ${eClean}`;
   };
+
+  const totalSessions = days.reduce((sum, d) => sum + (d.items?.length || 0), 0);
 
   return (
     <>
@@ -1189,7 +1195,15 @@ export function SchedulePage() {
             <em>new perspectives.</em>
           </>
         }
-        desc="Every published session, ordered by its live start time and room."
+        desc="Every published session, ordered by its live start time and room assignment."
+        aside={
+          totalSessions > 0 ? (
+            <div className="schedule-stat-pill">
+              <span className="schedule-stat-num">{totalSessions}</span>
+              <span className="schedule-stat-label">sessions scheduled</span>
+            </div>
+          ) : null
+        }
       />
       <section className="section apple-schedule-section">
         {schedule.loading ? <Loading label="Loading schedule" rows={3} /> : null}
@@ -1203,43 +1217,51 @@ export function SchedulePage() {
             const firstTime = day.items?.[0] ? time(day.items[0].startsAt) : '';
             const lastTime = day.items?.[count - 1] ? time(day.items[count - 1].endsAt) : '';
             const d = new Date(day.date);
-            const weekday = isNaN(d.getTime()) ? `DAY 0${index + 1}` : d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-            const dateStr = isNaN(d.getTime()) ? day.label : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            const wkd = isNaN(d.getTime()) ? `DAY 0${index + 1}` : d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            const dateStr = isNaN(d.getTime()) ? day.label : d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
             return (
               <article className="apple-schedule-card rise" key={day.date} style={{ animationDelay: `${index * 80}ms` }}>
                 <div className="apple-schedule-head">
                   <div className="apple-schedule-kicker-row">
-                    <span className="apple-schedule-kicker">{weekday} · DAY 0{index + 1}</span>
-                    <span className="apple-schedule-count">{count} sessions {firstTime ? `· ${firstTime} – ${lastTime}` : ''}</span>
+                    <span className="apple-schedule-kicker">{wkd} · DAY 0{index + 1}</span>
+                    <span className="apple-schedule-count">
+                      {count} {count === 1 ? 'session' : 'sessions'}
+                      {firstTime ? ` · ${firstTime} – ${lastTime}` : ''}
+                    </span>
                   </div>
                   <h2 className="apple-schedule-heading">{dateStr}</h2>
                 </div>
 
-                <ol className="apple-schedule-rows">
-                  {(day.items || []).map((item) => (
-                    <li key={item.id} className="apple-schedule-item">
-                      <Link to={`/events/${item.slug}`} className="apple-schedule-row-link">
-                        <time className="apple-schedule-time" dateTime={item.startsAt}>
-                          <span className="apple-schedule-dot" aria-hidden="true" />
-                          <span>{formatTimeSlot(item.startsAt, item.endsAt)}</span>
-                        </time>
-                        <div className="apple-schedule-content">
-                          <b className="apple-schedule-title">{item.title}</b>
-                          <span className="apple-schedule-room">
-                            <MapPin size={11} strokeWidth={1.8} style={{ opacity: 0.6 }} />
-                            <span>{item.room || 'Room to be announced'}</span>
-                          </span>
-                        </div>
-                        <div className="apple-schedule-meta">
-                          <span className="apple-schedule-tag">
-                            {item.category}
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
+                {count === 0 ? (
+                  <p className="apple-schedule-empty">Sessions to be announced.</p>
+                ) : (
+                  <ol className="apple-schedule-rows">
+                    {(day.items || []).map((item, i) => (
+                      <li key={item.id} className="apple-schedule-item">
+                        <Link to={`/events/${item.slug}`} className="apple-schedule-row-link">
+                          <time className="apple-schedule-time" dateTime={item.startsAt}>
+                            <span className="apple-schedule-dot" aria-hidden="true" />
+                            <span>{formatTimeSlot(item.startsAt, item.endsAt)}</span>
+                          </time>
+                          <div className="apple-schedule-content">
+                            <b className="apple-schedule-title">{item.title}</b>
+                            <span className="apple-schedule-room">
+                              <MapPin size={11} strokeWidth={1.8} style={{ opacity: 0.6 }} />
+                              <span>{item.room || 'Room TBA'}</span>
+                            </span>
+                          </div>
+                          <div className="apple-schedule-meta">
+                            {item.category ? (
+                              <span className="apple-schedule-tag">{item.category}</span>
+                            ) : null}
+                            <ArrowRight size={13} strokeWidth={1.8} className="apple-schedule-arrow" />
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </article>
             );
           })}
@@ -1431,11 +1453,36 @@ export function FAQPage() {
 
 export function ContactPage() {
   const { edition } = useSite();
-  const email = edition?.contactEmail;
+  const email = edition?.contactEmail || 'iste@nssce.ac.in';
+  const [topic, setTopic] = useState('general');
+  const [name, setName] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [sent, setSent] = useState(false);
+
+  const topics = [
+    { id: 'pass', label: 'Pass & Pricing' },
+    { id: 'events', label: 'Event Rules & Registration' },
+    { id: 'teams', label: 'Team Coordination' },
+    { id: 'travel', label: 'Travel & Accommodation' },
+    { id: 'general', label: 'General Inquiries' },
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const topicLabel = topics.find((t) => t.id === topic)?.label || 'General';
+    const subject = encodeURIComponent(`[Parallax 2026] Inquiry: ${topicLabel}`);
+    const body = encodeURIComponent(
+      `Name: ${name || 'Participant'}\nEmail: ${senderEmail || 'Not provided'}\nCategory: ${topicLabel}\n\nMessage:\n${message}\n\n--\nSent via Parallax 2026 Portal`,
+    );
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    setSent(true);
+  };
+
   return (
     <>
       <PageTitle
-        kicker="Contact"
+        kicker="Official Inquiries"
         title={
           <>
             Let’s get
@@ -1443,33 +1490,186 @@ export function ContactPage() {
             <em>in touch.</em>
           </>
         }
-        desc="The organising team answers from the official convention address."
+        desc="Have questions about the convention, passes, challenge schedules, or campus logistics? Our organising team responds directly."
+        aside={
+          <div className="contact-status-card">
+            <div className="contact-status-indicator">
+              <span className="contact-status-pulse" />
+              <span>Desk Online</span>
+            </div>
+            <span className="contact-status-hours">Typical response &lt; 4 hours</span>
+          </div>
+        }
       />
-      <section className="section contact-card">
-        <Mail size={24} strokeWidth={1.4} />
-        <div>
-          <span>OFFICIAL CONVENTION EMAIL</span>
-          {email ? (
-            <h2>
-              <a href={`mailto:${email}`}>{email}</a>
-            </h2>
-          ) : (
-            <h2>Contact address pending</h2>
-          )}
-          <p>
-            {edition?.organizer || 'ISTE'} · {edition?.host || 'NSS College of Engineering'}, {edition?.city || 'Palakkad'}
-          </p>
+
+      <section className="section contact-section">
+        {/* Touchpoint Cards Grid */}
+        <div className="contact-cards-grid">
+          {/* Card 1: Direct Convention Email */}
+          <article className="contact-channel-card">
+            <div className="contact-channel-icon-wrap">
+              <Mail size={22} strokeWidth={1.8} />
+            </div>
+            <div className="contact-channel-body">
+              <span className="contact-channel-tag">DIRECT INQUIRIES</span>
+              <h3 className="contact-channel-title">Official Convention Email</h3>
+              <p className="contact-channel-desc">
+                For pass assistance, corporate partnerships, certificates, or general convention inquiries.
+              </p>
+              <a href={`mailto:${email}`} className="contact-channel-link">
+                <span>{email}</span>
+                <ArrowUpRight size={14} strokeWidth={2} />
+              </a>
+            </div>
+          </article>
+
+          {/* Card 2: Campus & Host Venue */}
+          <article className="contact-channel-card">
+            <div className="contact-channel-icon-wrap">
+              <Building2 size={22} strokeWidth={1.8} />
+            </div>
+            <div className="contact-channel-body">
+              <span className="contact-channel-tag">CAMPUS DESK</span>
+              <h3 className="contact-channel-title">Host Institution</h3>
+              <p className="contact-channel-desc">
+                {edition?.host || 'NSS College of Engineering'}, {edition?.city || 'Palakkad'}. Main desk at the auditorium.
+              </p>
+              <Link to="/venue" className="contact-channel-link">
+                <span>Campus Location &amp; Directions</span>
+                <ArrowRight size={14} strokeWidth={2} />
+              </Link>
+            </div>
+          </article>
+
+          {/* Card 3: Participant Self-Service */}
+          <article className="contact-channel-card">
+            <div className="contact-channel-icon-wrap">
+              <ShieldCheck size={22} strokeWidth={1.8} />
+            </div>
+            <div className="contact-channel-body">
+              <span className="contact-channel-tag">STUDENT PORTAL</span>
+              <h3 className="contact-channel-title">Self-Service Console</h3>
+              <p className="contact-channel-desc">
+                Review your registered sessions, team credentials, attendance QR tokens, and verification status.
+              </p>
+              <Link to="/portal" className="contact-channel-link">
+                <span>Open Student Portal</span>
+                <ArrowRight size={14} strokeWidth={2} />
+              </Link>
+            </div>
+          </article>
         </div>
-        {email ? (
-          <Button href={`mailto:${email}`} variant="ghost" icon={ArrowUpRight}>
-            Write to the team
-          </Button>
-        ) : null}
-      </section>
-      <section className="section center-actions">
-        <Button to="/portal" variant="ghost" icon={ArrowRight}>
-          Open the participant portal
-        </Button>
+
+        {/* Executive In-Page Direct Dispatch / Quick Contact Form */}
+        <div className="contact-dispatch-wrap">
+          <div className="contact-dispatch-header">
+            <div className="contact-dispatch-head-left">
+              <span className="contact-dispatch-kicker">DIRECT TRANSMISSION</span>
+              <h2 className="contact-dispatch-title">Send a message to the organisers</h2>
+              <p className="contact-dispatch-desc">
+                Select your category and fill out the details below. We'll prepare your dispatch with the organising committee.
+              </p>
+            </div>
+            <div className="contact-dispatch-head-right">
+              <div className="contact-fast-stat">
+                <b>09:00 – 18:00 IST</b>
+                <span>Desk Active Hours</span>
+              </div>
+            </div>
+          </div>
+
+          <form className="contact-dispatch-form" onSubmit={handleSubmit}>
+            <div className="contact-topic-selector">
+              <span className="contact-field-label">Select Inquiry Category</span>
+              <div className="contact-topic-chips">
+                {topics.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`contact-topic-chip ${topic === t.id ? 'is-active' : ''}`}
+                    onClick={() => setTopic(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="contact-form-grid">
+              <div className="contact-form-group">
+                <label className="contact-field-label" htmlFor="contact-name">Your Full Name</label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  className="contact-input"
+                  placeholder="e.g. Alex Kumar"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="contact-form-group">
+                <label className="contact-field-label" htmlFor="contact-email">Your Email Address</label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  className="contact-input"
+                  placeholder="e.g. alex@college.edu"
+                  value={senderEmail}
+                  onChange={(e) => setSenderEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="contact-form-group">
+              <label className="contact-field-label" htmlFor="contact-message">Your Message or Question</label>
+              <textarea
+                id="contact-message"
+                className="contact-textarea"
+                rows={5}
+                placeholder="Describe your question, event name, or registration token..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="contact-form-footer">
+              <button type="submit" className="contact-submit-btn">
+                <span>Dispatch Email Inquiry</span>
+                <Send size={15} strokeWidth={2} />
+              </button>
+
+              <span className="contact-dispatch-note">
+                Direct route to {email}
+              </span>
+            </div>
+
+            {sent && (
+              <div className="contact-sent-notice">
+                <Check size={16} strokeWidth={2.4} />
+                <span>Inquiry opened in your email client. If it did not open, please write directly to <b>{email}</b>.</span>
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* Quick FAQ Callout Banner */}
+        <div className="contact-faq-banner">
+          <div className="contact-faq-banner-content">
+            <HelpCircle size={22} strokeWidth={1.8} className="contact-faq-icon" />
+            <div>
+              <h4>Looking for instant answers?</h4>
+              <p>Common questions about pass validity, lunch inclusions, team member rules, and cancellations are documented in the FAQ.</p>
+            </div>
+          </div>
+          <Link to="/faq" className="contact-faq-btn">
+            <span>Read FAQ</span>
+            <ArrowRight size={14} strokeWidth={2} />
+          </Link>
+        </div>
       </section>
     </>
   );
