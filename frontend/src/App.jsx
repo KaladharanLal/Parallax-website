@@ -119,6 +119,13 @@ export default function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const destroyLenis = initSmoothScroll();
+    return () => {
+      if (typeof destroyLenis === 'function') destroyLenis();
+    };
+  }, []);
+
+  useEffect(() => {
     setMenu(false);
   }, [location.pathname]);
 
@@ -169,7 +176,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      <div className='site-lensgrid' aria-hidden='true' />
+      
       <a className="skip" href="#main">
         Skip to content
       </a>
@@ -199,8 +206,8 @@ export default function App() {
               </Link>
             ))}
             <Link className="portal-link" to={user ? (isStaff ? '/manage' : '/portal') : '/login'}>
-              {authLoading ? 'Portal' : user ? (isStaff ? 'Staff console' : 'My portal') : 'Sign in'}
-              <ArrowUpRight size={15} strokeWidth={1.6} />
+              <span>{authLoading ? 'Portal' : user ? (isStaff ? 'Console' : 'My portal') : 'Sign in'}</span>
+              <span className="portal-link-icon"><ArrowUpRight size={13} strokeWidth={2.4} /></span>
             </Link>
           </nav>
         </header>

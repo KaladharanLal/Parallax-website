@@ -7,6 +7,7 @@ import {
   Boxes,
   CalendarDays,
   Check,
+  ChevronDown,
   Clock3,
   Code2,
   Cpu,
@@ -54,6 +55,14 @@ const LOGO = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/
 const GLOBE = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/modified assets/globe.svg`;
 const NSSCE = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/NSSCE-Palakkad-Logo.webp`;
 const ISTE = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/ISTE LOGO NO  BG PNG.png`;
+
+// High-fidelity architectural parallax depth backplates & vector assets
+const PARALLAX_BG_VAULT = `${import.meta.env.BASE_URL}images/parallax-bg-vault.webp`;
+const PARALLAX_BG_CORE = `${import.meta.env.BASE_URL}images/parallax-bg-core.webp`;
+const PARALLAX_BG_PEDESTAL = `${import.meta.env.BASE_URL}images/parallax-bg-pedestal.webp`;
+const PARALLAX_DEPTH_BG = `${import.meta.env.BASE_URL}images/parallax-depth-bg.webp`;
+const PARALLAX_VECTOR = `${import.meta.env.BASE_URL}images/parallax-vector.svg`;
+const PARALLAX_LOGO_ASSET = `${import.meta.env.BASE_URL}images/parallax-logo.png`;
 
 function CategoryIcon({ category, size = 30 }) {
   const cat = (category || '').toLowerCase();
@@ -113,345 +122,364 @@ function getEventAccent(event) {
 }
 
 export function EventCard({ event, index = 0 }) {
-  const tiltRef = useCardTilt({ maxTilt: 4, scale: 1.015 });
-  const capacity =
-    event.seatsLeft === null || event.seatsLeft === undefined
-      ? 'Open capacity'
-      : `${event.seatsLeft} of ${event.capacity} seats left`;
-
+  const tiltRef = useCardTilt({ maxTilt: 2.5, scale: 1.01 });
   const isTeam = event.format === 'team';
 
   return (
     <Link
       ref={tiltRef}
       to={`/events/${event.slug}`}
-      className="pro-event-card rise"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="apple-event-card rise"
+      style={{ animationDelay: `${index * 35}ms` }}
     >
-      <div className="pro-card-header">
-        <div className="pro-card-tags">
-          <span className="pro-cat-tag">
-            <span className={`pro-cat-dot dot-${getEventAccent(event)}`} />
+      <div className="apple-event-media">
+        {event.bannerUrl ? (
+          <img
+            src={event.bannerUrl}
+            alt={event.title}
+            className="apple-event-img"
+            loading="lazy"
+          />
+        ) : (
+          <div className="apple-event-fallback">
+            <img src={PARALLAX_BG_CORE} alt="" className="apple-event-fallback-bg" />
+            <EventIcon
+              iconId={event.iconId}
+              category={event.categorySlug || event.categoryName}
+              size={36}
+            />
+          </div>
+        )}
+        <div className="apple-event-media-overlay" />
+
+        {/* Quiet status tag top-right */}
+        <div className={`apple-event-status ${event.registrationOpen ? 'is-open' : 'is-closed'}`}>
+          <span className="apple-status-dot" />
+          <span>{event.registrationOpen ? 'Open' : 'Closed'}</span>
+        </div>
+      </div>
+
+      <div className="apple-event-body">
+        <div className="apple-event-meta-top">
+          <span className="apple-event-cat">
+            <span className={`apple-cat-dot dot-${getEventAccent(event)}`} />
             {event.categoryName}
           </span>
-          <span className="pro-format-tag">
+          <span className="apple-event-dot-sep">·</span>
+          <span className="apple-event-format">
             {isTeam ? `Team (${event.teamMinSize || 2}–${event.teamMaxSize || 4})` : 'Individual'}
           </span>
         </div>
-        <div className="pro-card-arrow" aria-hidden="true">
-          <ArrowUpRight size={16} strokeWidth={1.8} />
-        </div>
-      </div>
 
-      <div className="pro-card-main">
-        <div className="pro-card-icon-box">
-          <EventIcon
-            iconId={event.iconId}
-            category={event.categorySlug || event.categoryName}
-            size={22}
-          />
-        </div>
-        <h3 className="pro-card-title">{event.title}</h3>
-      </div>
+        <h3 className="apple-event-title">{event.title}</h3>
+        <p className="apple-event-desc">{event.summary}</p>
 
-      <p className="pro-card-desc">{event.summary}</p>
+        <div className="apple-event-footer">
+          <span className="apple-event-venue">
+            <MapPin size={11} strokeWidth={1.8} style={{ opacity: 0.6 }} />
+            <span>{event.venueRoom || 'Main Stage'}</span>
+          </span>
 
-      <div className="pro-card-metrics">
-        <div className="pro-metric-item">
-          <span className="pro-metric-label">Included value</span>
-          <span className="pro-metric-val">{money(event.baseValuePaise)}</span>
+          <span className="apple-event-price">
+            {event.addonPricePaise > 0 ? `Add-on ${money(event.addonPricePaise)}` : 'Included with pass'}
+          </span>
         </div>
-        <div className="pro-metric-divider" />
-        <div className="pro-metric-item">
-          <span className="pro-metric-label">Add-on fee</span>
-          <span className="pro-metric-val">{money(event.addonPricePaise)}</span>
-        </div>
-      </div>
-
-      <div className="pro-card-footer">
-        <span className="pro-capacity-text">{capacity}</span>
-        <span className={`pro-status-pill ${event.registrationOpen ? 'is-open' : 'is-closed'}`}>
-          {event.registrationOpen ? 'Registration open' : 'Closed'}
-        </span>
       </div>
     </Link>
   );
 }
 
+const TOTAL_HERO_FRAMES = 192;
 
 function HeroParallax({ edition, days }) {
-  const containerRef = useRef(null);
-  const bgRef = useRef(null);
-  const copyRef = useRef(null);
-  const artRef = useRef(null);
-  const chipTopRef = useRef(null);
-  const chipBottomRef = useRef(null);
+  const trackRef = useRef(null);
+  const stageRef = useRef(null);
+  const canvasRef = useRef(null);
+  const scrollPromptRef = useRef(null);
 
+  const imagesRef = useRef([]);
+  const currentFrameRef = useRef(0);
+  const [framesLoaded, setFramesLoaded] = useState(false);
+
+  const renderFrame = (frameIdx) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = imagesRef.current[frameIdx];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = canvas.clientWidth || window.innerWidth;
+    const h = canvas.clientHeight || window.innerHeight;
+
+    if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+    }
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    const iw = img.naturalWidth || 1280;
+    const ih = img.naturalHeight || 720;
+    const scale = Math.max(w / iw, h / ih);
+    const ox = (w - iw * scale) / 2;
+    const oy = (h - ih * scale) / 2;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, ox, oy, iw * scale, ih * scale);
+    ctx.restore();
+  };
+
+  // Preload image sequence for instantaneous 60fps scrub
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return undefined;
+    let active = true;
+    const loadedImages = [];
+    const baseUrl = import.meta.env.BASE_URL;
+
+    let loadedCount = 0;
+    for (let i = 1; i <= TOTAL_HERO_FRAMES; i++) {
+      const img = new Image();
+      const num = String(i).padStart(3, '0');
+      img.src = `${baseUrl}anim/sequence/frame_${num}.webp`;
+      img.onload = () => {
+        loadedCount++;
+        if (i === 1 && active) {
+          renderFrame(0);
+        }
+        if (loadedCount >= Math.min(20, TOTAL_HERO_FRAMES) && active) {
+          setFramesLoaded(true);
+        }
+      };
+      loadedImages.push(img);
+    }
+    imagesRef.current = loadedImages;
+
+    const onResize = () => {
+      renderFrame(currentFrameRef.current);
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      active = false;
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  // Subtle pointer parallax tilt
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
 
     const onMouseMove = (e) => {
-      const rect = container.getBoundingClientRect();
+      const rect = stage.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
 
-      if (artRef.current) {
-        gsap.to(artRef.current, {
-          rotateY: x * 16,
-          rotateX: -y * 16,
+      stage.style.setProperty('--mouse-x', `${(x + 0.5) * 100}%`);
+      stage.style.setProperty('--mouse-y', `${(y + 0.5) * 100}%`);
+
+      if (canvasRef.current) {
+        gsap.to(canvasRef.current, {
+          rotateY: x * 3,
+          rotateX: -y * 3,
+          scale: 1.01,
           transformPerspective: 1200,
           ease: 'power1.out',
           duration: 0.35,
         });
       }
-
-      if (chipTopRef.current) {
-        gsap.to(chipTopRef.current, {
-          x: x * 35,
-          y: y * 35,
-          ease: 'power1.out',
-          duration: 0.45,
-        });
-      }
-
-      if (chipBottomRef.current) {
-        gsap.to(chipBottomRef.current, {
-          x: -x * 30,
-          y: -y * 30,
-          ease: 'power1.out',
-          duration: 0.45,
-        });
-      }
     };
 
     const onMouseLeave = () => {
-      if (artRef.current) {
-        gsap.to(artRef.current, {
+      if (canvasRef.current) {
+        gsap.to(canvasRef.current, {
           rotateX: 0,
           rotateY: 0,
+          scale: 1,
           ease: 'power2.out',
-          duration: 0.7,
+          duration: 0.6,
         });
       }
-      if (chipTopRef.current) gsap.to(chipTopRef.current, { x: 0, y: 0, duration: 0.7 });
-      if (chipBottomRef.current) gsap.to(chipBottomRef.current, { x: 0, y: 0, duration: 0.7 });
     };
 
-    container.addEventListener('mousemove', onMouseMove);
-    container.addEventListener('mouseleave', onMouseLeave);
+    stage.addEventListener('mousemove', onMouseMove);
+    stage.addEventListener('mouseleave', onMouseLeave);
 
     return () => {
-      container.removeEventListener('mousemove', onMouseMove);
-      container.removeEventListener('mouseleave', onMouseLeave);
+      stage.removeEventListener('mousemove', onMouseMove);
+      stage.removeEventListener('mouseleave', onMouseLeave);
     };
   }, []);
 
+  // GSAP ScrollTrigger Sequence Scrubbing with Hero Logo Fly-Through
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return undefined;
+    const track = trackRef.current;
+    if (!track) return undefined;
+
+    const isReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) {
+      renderFrame(TOTAL_HERO_FRAMES - 1);
+      return undefined;
+    }
 
     const ctx = gsap.context(() => {
-      if (bgRef.current) {
-        gsap.to(bgRef.current, {
-          yPercent: 20,
-          scale: 1.1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: container,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1.2,
-          },
-        });
-      }
+      ScrollTrigger.create({
+        trigger: track,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.65,
+        onUpdate: (self) => {
+          const progress = self.progress;
+          const targetFrame = Math.min(
+            TOTAL_HERO_FRAMES - 1,
+            Math.max(0, Math.floor(progress * (TOTAL_HERO_FRAMES - 1)))
+          );
+          currentFrameRef.current = targetFrame;
+          renderFrame(targetFrame);
 
-      if (artRef.current) {
-        gsap.to(artRef.current, {
-          yPercent: -20,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: container,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true,
-          },
-        });
-      }
-
-      if (copyRef.current) {
-        gsap.to(copyRef.current, {
-          yPercent: -15,
-          opacity: 0.35,
-          ease: 'power1.in',
-          scrollTrigger: {
-            trigger: container,
-            start: 'top top',
-            end: '85% top',
-            scrub: true,
-          },
-        });
-      }
-    }, container);
+          if (scrollPromptRef.current) {
+            scrollPromptRef.current.style.opacity = progress > 0.05 ? '0' : '1';
+            scrollPromptRef.current.style.pointerEvents = progress > 0.05 ? 'none' : 'auto';
+          }
+        },
+      });
+    }, track);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section className="hero" ref={containerRef}>
-      <div className="hero-bg-plane" ref={bgRef} aria-hidden="true" />
-      <div className="hero-copy" ref={copyRef}>
-        <div className="hero-brand-lockup">
-          <h1 className="hero-logo-wrapper">
-            <img src={LOGO} alt={`${edition.name} logo`} className="hero-main-logo" />
-          </h1>
-        </div>
-        <Eyebrow>{edition.organizer || 'ISTE Student Chapter'} · {edition.host || 'NSSCE Palakkad'}</Eyebrow>
-        <h2>
-          {edition.tagline?.toLowerCase().includes('argued in public') ? (
-            <>
-              Two days of engineering,
-              <br />
-              <em>argued in public.</em>
-            </>
-          ) : (
-            edition.tagline || edition.name
-          )}
-        </h2>
-        <p className="hero-description">
-          A single convention pass for all {days} days. Full floor access to every keynote,
-          challenge, and workshop with zero gated tracks.
-        </p>
-        <div className="hero-actions">
-          <Button to="/events" icon={ArrowRight}>
-            Explore events
-          </Button>
-          <Button to="/pass" variant="ghost" icon={ArrowUpRight}>
-            Understand the pass
-          </Button>
-        </div>
-        <div className="hero-note">
-          <span className={`hero-status-tag ${edition.registrationOpen ? 'is-open' : 'is-closed'}`}>
-            {edition.registrationOpen ? 'Registration open' : 'Registration closed'}
-          </span>
-          <Link to="/portal" className="hero-portal-link">
-            Participant portal <ArrowUpRight size={13} strokeWidth={1.5} />
-          </Link>
-        </div>
-      </div>
+    <section className="hero-scroll-track" ref={trackRef}>
+      <div className="hero-sticky-stage" ref={stageRef}>
+        {/* Full-bleed 3D canvas stage */}
+        <canvas className="hero-scroll-canvas" ref={canvasRef} />
 
-      <div className="hero-art" aria-hidden="true">
-        <div className="hero-art-stage" ref={artRef}>
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="orbit orbit-three" />
-          <img src={GLOBE} alt="" />
+        {/* Dynamic vignette and specular glare overlay */}
+        <div className="hero-atmosphere-vignette" aria-hidden="true" />
+        <div className="hero-specular-glare" aria-hidden="true" />
 
-          <div className="hero-floating-chip hero-chip-top" ref={chipTopRef}>
-            <span>ISTE State Convention</span>
+        {/* Minimal Lusion-style Scroll Cue */}
+        <div className="lusion-hero-scroll-cue" ref={scrollPromptRef}>
+          <div className="lusion-mouse-indicator">
+            <span className="lusion-mouse-dot" />
           </div>
-
-          <div className="hero-floating-chip hero-chip-bottom" ref={chipBottomRef}>
-            <span>48h Hackathon & Sprint</span>
-          </div>
-
-          <div className="art-label">
-            <span>{dateRange(edition.startsAt, edition.endsAt)}</span>
-            <b>
-              {edition.venue || 'NSSCE Palakkad'}
-              <br />
-              {edition.city || 'Main Campus'}
-            </b>
-          </div>
+          <span className="lusion-cue-text">Scroll to explore</span>
         </div>
-      </div>
-
-      <div className="hero-foot">
-        <span>
-          <MapPin size={15} strokeWidth={1.5} /> {edition.host}
-        </span>
-        <span>
-          <CalendarDays size={15} strokeWidth={1.5} />{' '}
-          {dateRange(edition.startsAt, edition.endsAt)}
-        </span>
-        <span>
-          <Users size={15} strokeWidth={1.5} /> {edition.city}
-        </span>
       </div>
     </section>
   );
 }
 
+function useParallaxScroll() {
+  useEffect(() => {
+    const isReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return undefined;
+
+    const layers = document.querySelectorAll('[data-parallax-speed]');
+    if (!layers.length) return undefined;
+
+    const ctx = gsap.context(() => {
+      layers.forEach((layer) => {
+        const speed = parseFloat(layer.getAttribute('data-parallax-speed')) || 0.2;
+        const parent = layer.closest('section') || layer.parentElement;
+        gsap.fromTo(
+          layer,
+          { yPercent: -speed * 45, force3D: true },
+          {
+            yPercent: speed * 45,
+            force3D: true,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: parent,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.0,
+            },
+          }
+        );
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+}
 
 function PassHighlightSection({ policy }) {
-  const tiltRef = useCardTilt({ maxTilt: 3, scale: 1.01 });
+  const tiltRef = useCardTilt({ maxTilt: 2.5, scale: 1.01 });
   const lunchDays = policy?.lunchIncludedDays?.length || 2;
   const includedCount = policy?.includedEventCount || 3;
+  const priceRupees = Math.round((policy?.passPricePaise || 35000) / 100);
   const valueCap = money(policy?.includedValueCapPaise || 45000);
 
   return (
-    <section className="pro-pass-section">
-      <div className="pro-pass-card" ref={tiltRef}>
-        <div className="pro-pass-glow" aria-hidden="true" />
+    <section className="apple-pass-section tf-parallax-section">
+      <div className="tf-parallax-bg" data-parallax-speed="0.2" aria-hidden="true">
+        <img src={PARALLAX_BG_CORE} alt="" className="tf-bg-img" />
+        <div className="tf-vignette-overlay" />
+      </div>
 
-        <div className="pro-pass-left">
-          <div className="pro-pass-badge">
-            <Ticket size={14} strokeWidth={2} />
-            <span>All-access convention pass</span>
+      <div className="apple-pass-card tf-parallax-fg" ref={tiltRef}>
+        <div className="apple-pass-left">
+          <div className="apple-pass-badge">
+            <Ticket size={13} strokeWidth={2} />
+            <span>ALL-ACCESS CONVENTION PASS</span>
           </div>
 
-          <h2 className="pro-pass-headline">Your entire convention. One simple pass.</h2>
+          <h2 className="apple-pass-headline">
+            Two days of engineering.<br />One all-inclusive pass.
+          </h2>
 
-          <p className="pro-pass-sub">
-            No fragmented track passes or gated entry fees. A single registration gives you full floor access across both convention days.
+          <p className="apple-pass-sub">
+            Full floor clearance across every keynote, competition, and workshop with zero gated tracks or hidden fees.
           </p>
 
-          <div className="pro-pass-benefits">
-            <div className="pro-benefit-row">
-              <span className="pro-check-icon">
-                <Check size={14} strokeWidth={2.5} />
+          <div className="apple-pass-benefits">
+            <div className="apple-benefit-row">
+              <span className="apple-check-icon">
+                <Check size={13} strokeWidth={2.4} />
               </span>
               <span>
                 <b>Lunch included</b> on both convention days ({lunchDays} days)
               </span>
             </div>
-            <div className="pro-benefit-row">
-              <span className="pro-check-icon">
-                <Check size={14} strokeWidth={2.5} />
+            <div className="apple-benefit-row">
+              <span className="apple-check-icon">
+                <Check size={13} strokeWidth={2.4} />
               </span>
               <span>
-                <b>Pick up to {includedCount} included events</b> within {valueCap} base value
+                <b>Choose up to {includedCount} events</b> within {valueCap} base allowance
               </span>
             </div>
-            <div className="pro-benefit-row">
-              <span className="pro-check-icon">
-                <Check size={14} strokeWidth={2.5} />
+            <div className="apple-benefit-row">
+              <span className="apple-check-icon">
+                <Check size={13} strokeWidth={2.4} />
               </span>
               <span>
-                <b>Zero gated tracks</b> — unrestricted access to all keynotes and challenges
+                <b>Zero gated tracks</b> — unrestricted access to all exhibition halls
               </span>
             </div>
           </div>
         </div>
 
-        <div className="pro-pass-right">
-          <div className="pro-pricing-box">
-            <span className="pro-price-caption">Full Convention Access</span>
-            <div className="pro-price-amount">
-              <span className="pro-price-currency">₹</span>
-              <span className="pro-price-number">
-                {Math.round((policy?.passPricePaise || 35000) / 100)}
-              </span>
-              <span className="pro-price-tenure">/ pass</span>
+        <div className="apple-pass-right">
+          <div className="apple-pass-pricing-box">
+            <span className="apple-price-caption">CONVENTION PASS</span>
+            <div className="apple-price-amount">
+              <span className="apple-price-currency">₹</span>
+              <span className="apple-price-number">{priceRupees}</span>
+              <span className="apple-price-tenure">/ pass</span>
             </div>
-            <p className="pro-price-note">Covers all keynotes, lunch, workshops & badge</p>
+            <p className="apple-price-note">Covers both convention days, lunch, kit & verified badge</p>
 
-            <Link to="/pass" className="pro-pass-cta-btn">
+            <Link to="/pass" className="apple-pass-btn">
               <span>Get your pass</span>
-              <ArrowRight size={16} strokeWidth={2} />
+              <span className="apple-btn-arrow">
+                <ArrowRight size={14} strokeWidth={2.4} />
+              </span>
             </Link>
 
-            <span className="pro-instant-tag">Instant access via Student Portal</span>
+            <span className="apple-instant-tag">Instant digital verification in Student Portal</span>
           </div>
         </div>
       </div>
@@ -497,67 +525,80 @@ export function Home() {
     ),
   );
 
+  // Initialize hardware-accelerated parallax layer scrub down the page
+  useParallaxScroll();
+
   return (
     <>
+      {/* 100% Clean 3D Hero Scroll Stage */}
       <HeroParallax edition={edition} days={days} />
 
-      <section className="intro section">
-        <div>
-          <Eyebrow>The Convention</Eyebrow>
-          <h2>
-            One gathering.
-            <br />
-            <em>Many perspectives.</em>
-          </h2>
+      {/* The Programme & Featured Challenges Showcase with 2.5D Layer Parallax */}
+      <section className="section lusion-programme-section tf-parallax-section" id="programme">
+        {/* Layer 0: Continuous Cyber Corridor Environment */}
+        <div className="tf-parallax-bg" data-parallax-speed="0.22" aria-hidden="true">
+          <img src={PARALLAX_DEPTH_BG} alt="" className="tf-bg-img" />
+          <div className="tf-vignette-overlay" />
         </div>
-        <div className="intro-text">
-          <p>
-            {edition.name} is a {days}-day student convention hosted by {edition.host}. Every
-            participant holds a single convention pass, then builds a programme from the published
-            catalogue within one transparent allowance.
-          </p>
-          <Link className="text-link" to="/about">
-            Get to know the edition <ArrowRight size={16} strokeWidth={1.5} />
-          </Link>
+
+        {/* Layer 1: Interactive Foreground Content */}
+        <div className="tf-parallax-fg">
+          <div className="lusion-section-head">
+            <div className="lusion-head-left">
+              <h1 className="lusion-section-title">
+                Two days of engineering,<br />
+                <em>argued in public.</em>
+              </h1>
+              <p className="lusion-section-desc">
+                A single convention pass for all {days} days. Full floor access to every keynote,
+                challenge, and workshop with zero gated tracks.
+              </p>
+            </div>
+            <div className="lusion-head-actions">
+              <Link to="/events" className="lusion-btn lusion-btn-primary">
+                <span>Explore All Challenges</span>
+                <span className="lusion-btn-icon"><ArrowRight size={15} strokeWidth={2.2} /></span>
+              </Link>
+              <Link to="/pass" className="lusion-btn lusion-btn-ghost">
+                <span>All-Access Pass</span>
+                <span className="lusion-btn-icon"><ArrowUpRight size={15} strokeWidth={2.2} /></span>
+              </Link>
+            </div>
+          </div>
+
+          {(featured.loading && !events.length) || (fallbackEvents.loading && !events.length) ? (
+            <Loading label="Loading the programme" rows={2} />
+          ) : featured.error && fallbackEvents.error ? (
+            <ErrorBox error={featured.error} onRetry={featured.reload} />
+          ) : events.length ? (
+            <div className="lusion-event-grid">
+              {events.map((event, index) => (
+                <EventCard key={event.id} event={event} index={index} />
+              ))}
+            </div>
+          ) : (
+            <Empty title="The programme is being published" desc="Featured events will appear here." />
+          )}
         </div>
       </section>
 
+      {/* Chapter 02: All-Access Pass Architecture with Layer Parallax */}
       <PassHighlightSection policy={policy} />
 
-      <section className="section event-section">
-        <SectionHead
-          kicker="The Programme"
-          title="Find your kind of challenge"
-          action={
-            <Link className="text-link" to="/events">
-              All events <ArrowRight size={16} strokeWidth={1.5} />
-            </Link>
-          }
-        />
-        {(featured.loading && !events.length) || (fallbackEvents.loading && !events.length) ? (
-          <Loading label="Loading the programme" rows={2} />
-        ) : featured.error && fallbackEvents.error ? (
-          <ErrorBox error={featured.error} onRetry={featured.reload} />
-        ) : events.length ? (
-          <div className="event-grid">
-            {events.map((event, index) => (
-              <EventCard key={event.id} event={event} index={index} />
-            ))}
-          </div>
-        ) : (
-          <Empty title="The programme is being published" desc="Featured events will appear here." />
-        )}
-      </section>
-
-      <section className="facts section">
-        <div className="fact">
+      {/* Chapter 03: Architectural Facts with Floor Grid Runway */}
+      <section className="facts section tf-parallax-section">
+        <div className="tf-parallax-bg" data-parallax-speed="0.28" aria-hidden="true">
+          <img src={PARALLAX_BG_PEDESTAL} alt="" className="tf-bg-img" />
+          <div className="tf-vignette-overlay" />
+        </div>
+        <div className="fact tf-parallax-fg">
           <span>01 / FORMAT</span>
           <b>
             Individual
             <br />& team events
           </b>
         </div>
-        <div className="fact">
+        <div className="fact tf-parallax-fg">
           <span>02 / DURATION</span>
           <b>
             {days} days
@@ -565,7 +606,7 @@ export function Home() {
             together
           </b>
         </div>
-        <div className="fact">
+        <div className="fact tf-parallax-fg">
           <span>03 / WHEN</span>
           <b>
             {date(edition.startsAt)}
@@ -573,7 +614,7 @@ export function Home() {
             {date(edition.endsAt)}
           </b>
         </div>
-        <div className="fact">
+        <div className="fact tf-parallax-fg">
           <span>04 / WHERE</span>
           <b>
             {edition.venue}
@@ -601,24 +642,38 @@ export function Home() {
         </section>
       ) : null}
 
-      <section className="cta section">
-        <div className="cta-mark" aria-hidden="true">
-          <img src={LOGO} alt="" className="cta-logo-mark" />
+      {/* Chapter 04: Finale with Centered 3D Chrome Emblem */}
+      <section className="cta section tf-parallax-section">
+        <div className="tf-parallax-bg" data-parallax-speed="0.18" aria-hidden="true">
+          <img src={PARALLAX_DEPTH_BG} alt="" className="tf-bg-img" />
+          <div className="tf-vignette-overlay" />
         </div>
-        <Eyebrow>Your Next Perspective</Eyebrow>
-        <h2>
-          Make room for
-          <br />
-          <em>what’s next.</em>
-        </h2>
-        <p className="cta-copy">
-          {config?.paymentsEnabled
-            ? 'Pay securely, choose your included events, and collect your entry ticket in the participant portal.'
-            : 'Register online, select your events, and collect your verified convention entry ticket.'}
-        </p>
-        <Button to="/portal" icon={ArrowRight}>
-          Enter the participant portal
-        </Button>
+
+        <div className="tf-parallax-fg">
+          <div className="cta-emblem-center" aria-hidden="true">
+            <img src={LOGO} alt="" className="cta-emblem-img" />
+          </div>
+          <Eyebrow>Your Next Perspective</Eyebrow>
+          <h2>
+            Make room for
+            <br />
+            <em>the new perspectives.</em>
+          </h2>
+          <p>
+            One pass unlocks {edition.name}. Check the timetable, review the challenges,
+            and secure your badge.
+          </p>
+          <div className="cta-action-group">
+            <Link to="/pass" className="lusion-btn lusion-btn-primary">
+              <span>Get your pass</span>
+              <span className="lusion-btn-icon"><ArrowRight size={15} strokeWidth={2.2} /></span>
+            </Link>
+            <Link to="/events" className="lusion-btn lusion-btn-ghost">
+              <span>Explore events</span>
+              <span className="lusion-btn-icon"><ArrowUpRight size={15} strokeWidth={2.2} /></span>
+            </Link>
+          </div>
+        </div>
       </section>
     </>
   );
@@ -783,7 +838,7 @@ export function EventsPage() {
           <ErrorBox error={list.error} onRetry={list.reload} />
         ) : events.length ? (
           <>
-            <div className="event-grid">
+            <div className="event-grid lusion-event-grid">
               {events.map((event, index) => (
                 <EventCard key={event.id} event={event} index={index} />
               ))}
@@ -887,7 +942,25 @@ export function EventDetail() {
 
   return (
     <>
-      <PageTitle
+      {event.bannerUrl ? (
+        <div className="event-detail-banner-hero">
+          <img src={event.bannerUrl} alt={event.title} className="event-detail-banner-img" />
+          <div className="event-detail-banner-overlay" />
+          <div className="event-detail-banner-content">
+            <span className="event-detail-banner-cat">
+              {event.categoryName.toUpperCase()} · {event.format.toUpperCase()}
+            </span>
+            <h1 className="event-detail-banner-title">{event.title}</h1>
+            <div className="title-badges" style={{ marginTop: '12px' }}>
+              <Badge tone={event.registrationOpen ? 'good' : 'muted'}>
+                {event.registrationOpen ? 'Registration open' : 'Registration closed'}
+              </Badge>
+              {event.isFeatured ? <Badge tone="accent">Featured</Badge> : null}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <PageTitle
         kicker={`${event.categoryName.toUpperCase()} · ${event.format.toUpperCase()}`}
         title={event.title}
         desc={event.summary}
@@ -900,6 +973,7 @@ export function EventDetail() {
           </div>
         }
       />
+      )}
       <section className="section detail-grid">
         <article className="detail-main">
           <Eyebrow>About this Event</Eyebrow>
@@ -985,6 +1059,11 @@ export function EventDetail() {
 export function PassPage() {
   const { edition, policy } = useSite();
   const mode = policy?.includedSelectionMode === 'exact' ? 'Exactly' : 'Up to';
+  const lunchDays = policy?.lunchIncludedDays?.length || 2;
+  const includedCount = policy?.includedEventCount || 3;
+  const priceRupees = Math.round((policy?.passPricePaise || 35000) / 100);
+  const valueCap = money(policy?.includedValueCapPaise || 45000);
+
   return (
     <>
       <PageTitle
@@ -996,90 +1075,89 @@ export function PassPage() {
             <em>Your event choices.</em>
           </>
         }
-        desc="The pass, the included allowance and add-on fees are three separate parts of the pricing model."
+        desc="A single registration unlocks full floor access across both days. The pass, included allowance and add-ons are transparently structured."
       />
-      <section className="section pass-layout">
-        <article className="price-card">
-          <span>MANDATORY · PER PARTICIPANT</span>
-          <strong>{money(policy?.passPricePaise)}</strong>
-          <p>{edition.name} Convention Pass</p>
-          <div className="price-rule" />
-          <p>
-            <Check size={16} strokeWidth={2} /> Lunch on{' '}
-            {(policy?.lunchIncludedDays || []).map(dayLabel).join(' and ') || 'convention days'}
-          </p>
-          <p>
-            <Check size={16} strokeWidth={2} /> {mode} {policy?.includedEventCount} included event
-            choices
-          </p>
-          <p>
-            <Check size={16} strokeWidth={2} /> Base value capped at{' '}
-            {money(policy?.includedValueCapPaise)}
-          </p>
-          <p>
-            <Check size={16} strokeWidth={2} /> Entry ticket with a scannable token
-          </p>
-          <Button to="/portal/pass" icon={ArrowRight} className="full">
-            Get your pass
-          </Button>
-          <small>
-            {policy?.gstNote || 'Fees are shown in Indian rupees.'} Paid in the participant portal.
-          </small>
-        </article>
-        <article className="pass-copy">
-          <Eyebrow>How Pricing Works</Eyebrow>
-          <h2>
-            Pass first.
-            <br />
-            <em>Then pick your programme.</em>
-          </h2>
-          <ol>
-            <li>
-              <b>Every participant gets one pass.</b>
+
+      <section className="section apple-pass-page-section">
+        <div className="apple-pass-page-grid">
+          <article className="apple-pass-pricing-box apple-pass-page-card">
+            <span className="apple-price-caption">ALL-ACCESS PASS</span>
+            <div className="apple-price-amount">
+              <span className="apple-price-currency">₹</span>
+              <span className="apple-price-number">{priceRupees}</span>
+              <span className="apple-price-tenure">/ pass</span>
+            </div>
+            <p className="apple-price-note">{edition.name} Convention Pass</p>
+
+            <div className="apple-pass-benefits" style={{ margin: '24px 0 28px', width: '100%' }}>
+              <div className="apple-benefit-row">
+                <span className="apple-check-icon"><Check size={13} strokeWidth={2.4} /></span>
+                <span><b>Lunch included</b> on both convention days ({lunchDays} days)</span>
+              </div>
+              <div className="apple-benefit-row">
+                <span className="apple-check-icon"><Check size={13} strokeWidth={2.4} /></span>
+                <span><b>{mode} {includedCount} included events</b> within {valueCap} base cap</span>
+              </div>
+              <div className="apple-benefit-row">
+                <span className="apple-check-icon"><Check size={13} strokeWidth={2.4} /></span>
+                <span><b>Full floor access</b> with verified digital convention ticket</span>
+              </div>
+            </div>
+
+            <Link to="/portal/pass" className="apple-pass-btn">
+              <span>Get your pass</span>
+              <span className="apple-btn-arrow"><ArrowRight size={14} strokeWidth={2.4} /></span>
+            </Link>
+
+            <small className="apple-instant-tag" style={{ marginTop: '16px' }}>
+              {policy?.gstNote || 'Fees in Indian rupees.'} Paid securely in the portal.
+            </small>
+          </article>
+
+          <article className="apple-pass-copy-card">
+            <span className="apple-pass-kicker">PRICING ARCHITECTURE</span>
+            <h2>
+              Pass first.<br /><em>Then pick your programme.</em>
+            </h2>
+
+            <ol className="apple-pass-steps">
+              <li>
+                <b>01 / Every participant gets one pass</b>
+                <p>
+                  It includes lunch on both days and is required before reserving any event in the catalogue.
+                </p>
+              </li>
+              <li>
+                <b>02 / Choose {mode.toLowerCase()} {includedCount} eligible events</b>
+                <p>
+                  The sum of their published base values stays within the {valueCap} allowance. The pass fee is never deducted from that sum.
+                </p>
+              </li>
+              <li>
+                <b>03 / Add extra events separately</b>
+                <p>
+                  Additional challenge registrations use each event’s published add-on fee and can be reserved after your pass.
+                </p>
+              </li>
+              <li>
+                <b>04 / Team members each hold a pass</b>
+                <p>
+                  {policy?.teamMembersRequirePass
+                    ? 'Every team member must hold an active pass before the team entry is confirmed.'
+                    : 'Team entry is available without a separate pass per member in this edition.'}
+                </p>
+              </li>
+            </ol>
+
+            <div className="apple-cap-well">
+              <span className="apple-cap-title">INCLUDED EVENT VALUE CAP</span>
+              <b className="apple-cap-amount">{valueCap} <small>live edition policy</small></b>
               <p>
-                It includes lunch on{' '}
-                {(policy?.lunchIncludedDays || []).map(dayLabel).join(' and ') || 'both days'} and
-                is required before any event registration.
+                Selection locks on {date(policy?.selectionChangeDeadline)}. Unpaid add-on reservations expire after {policy?.holdMinutes || 15} minutes.
               </p>
-            </li>
-            <li>
-              <b>
-                Choose {mode.toLowerCase()} {policy?.includedEventCount} eligible events.
-              </b>
-              <p>
-                The sum of their published base values must stay{' '}
-                {policy?.capInclusive ? 'at or under' : 'under'}{' '}
-                {money(policy?.includedValueCapPaise)}. The pass price is never added to that sum.
-              </p>
-            </li>
-            <li>
-              <b>Add extra events separately.</b>
-              <p>
-                Additional registrations use each event’s published add-on fee and are charged
-                after the pass.
-              </p>
-            </li>
-            <li>
-              <b>Team members each need a pass.</b>
-              <p>
-                {policy?.teamMembersRequirePass
-                  ? 'Every team member must hold an active pass before the team entry is accepted.'
-                  : 'Team entry does not require a separate pass per member in this edition.'}
-              </p>
-            </li>
-          </ol>
-          <div className="cap-callout">
-            <span>INCLUDED EVENT VALUE CAP</span>
-            <b>
-              {money(policy?.includedValueCapPaise)}{' '}
-              <small>live edition policy</small>
-            </b>
-            <p>
-              Selection locks on {date(policy?.selectionChangeDeadline)}. Unpaid add-on reservations
-              expire after {policy?.holdMinutes || 15} minutes.
-            </p>
-          </div>
-        </article>
+            </div>
+          </article>
+        </div>
       </section>
     </>
   );
@@ -1089,6 +1167,16 @@ export function SchedulePage() {
   const { slug } = useSite();
   const schedule = useAsync(() => publicApi.schedule(slug), [slug], { enabled: Boolean(slug) });
   const days = schedule.data?.data || [];
+
+  const formatTimeSlot = (startIso, endIso) => {
+    if (!startIso) return '';
+    const s = time(startIso);
+    const e = time(endIso);
+    if (!e) return s;
+    const sNum = s.replace(/\s*[ap]m/i, '').trim();
+    const eClean = e.toUpperCase().trim();
+    return `${sNum} – ${eClean}`;
+  };
 
   return (
     <>
@@ -1103,33 +1191,59 @@ export function SchedulePage() {
         }
         desc="Every published session, ordered by its live start time and room."
       />
-      <section className="section schedule-grid">
+      <section className="section apple-schedule-section">
         {schedule.loading ? <Loading label="Loading schedule" rows={3} /> : null}
         {schedule.error ? <ErrorBox error={schedule.error} onRetry={schedule.reload} /> : null}
         {!schedule.loading && !schedule.error && !days.length ? (
           <Empty title="The schedule is not published" desc="Sessions will appear here once released." />
         ) : null}
-        {days.map((day, index) => (
-          <article className="day-card rise" key={day.date} style={{ animationDelay: `${index * 80}ms` }}>
-            <span>{`DAY 0${index + 1}`}</span>
-            <h2>{day.label}</h2>
-            {day.items.map((item) => (
-              <div className="schedule-row" key={item.id}>
-                <Clock3 size={18} strokeWidth={1.4} />
-                <div>
-                  <Link to={`/events/${item.slug}`}>
-                    <b>{item.title}</b>
-                  </Link>
-                  <p>
-                    {time(item.startsAt)} - {time(item.endsAt)} · {item.room || 'Room to be announced'}
-                  </p>
+        <div className="apple-schedule-grid">
+          {days.map((day, index) => {
+            const count = day.items?.length || 0;
+            const firstTime = day.items?.[0] ? time(day.items[0].startsAt) : '';
+            const lastTime = day.items?.[count - 1] ? time(day.items[count - 1].endsAt) : '';
+            const d = new Date(day.date);
+            const weekday = isNaN(d.getTime()) ? `DAY 0${index + 1}` : d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            const dateStr = isNaN(d.getTime()) ? day.label : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+            return (
+              <article className="apple-schedule-card rise" key={day.date} style={{ animationDelay: `${index * 80}ms` }}>
+                <div className="apple-schedule-head">
+                  <div className="apple-schedule-kicker-row">
+                    <span className="apple-schedule-kicker">{weekday} · DAY 0{index + 1}</span>
+                    <span className="apple-schedule-count">{count} sessions {firstTime ? `· ${firstTime} – ${lastTime}` : ''}</span>
+                  </div>
+                  <h2 className="apple-schedule-heading">{dateStr}</h2>
                 </div>
-                <span className="pill">{item.category}</span>
-              </div>
-            ))}
-            <div className="day-art">0{index + 1}</div>
-          </article>
-        ))}
+
+                <ol className="apple-schedule-rows">
+                  {(day.items || []).map((item) => (
+                    <li key={item.id} className="apple-schedule-item">
+                      <Link to={`/events/${item.slug}`} className="apple-schedule-row-link">
+                        <time className="apple-schedule-time" dateTime={item.startsAt}>
+                          <span className="apple-schedule-dot" aria-hidden="true" />
+                          <span>{formatTimeSlot(item.startsAt, item.endsAt)}</span>
+                        </time>
+                        <div className="apple-schedule-content">
+                          <b className="apple-schedule-title">{item.title}</b>
+                          <span className="apple-schedule-room">
+                            <MapPin size={11} strokeWidth={1.8} style={{ opacity: 0.6 }} />
+                            <span>{item.room || 'Room to be announced'}</span>
+                          </span>
+                        </div>
+                        <div className="apple-schedule-meta">
+                          <span className="apple-schedule-tag">
+                            {item.category}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            );
+          })}
+        </div>
       </section>
     </>
   );
@@ -1238,7 +1352,7 @@ export function FAQPage() {
     ],
     [
       'What does the pass include?',
-      `Lunch on ${(policy?.lunchIncludedDays || []).map(dayLabel).join(' and ') || 'the convention days'}, entry, and an included-event allowance.`,
+      `Lunch on ${(policy?.lunchIncludedDays || []).map(dayLabel).join(' and ') || 'both convention days'}, full floor access, and an included event allowance.`,
     ],
     [
       'How many included events can I select?',
@@ -1252,7 +1366,7 @@ export function FAQPage() {
       'Can I register for more events?',
       policy?.addonRequiresPass
         ? 'Yes, after the pass. Extra events use their published add-on fee.'
-        : 'Yes. Add-on events can be purchased separately.',
+        : 'Yes. Add-on events can be reserved separately.',
     ],
     [
       'How does the team rule work?',
@@ -1277,6 +1391,7 @@ export function FAQPage() {
       `Write to ${edition?.contactEmail || 'the organisers'}.`,
     ],
   ];
+
   return (
     <>
       <PageTitle
@@ -1288,18 +1403,27 @@ export function FAQPage() {
             <em>clear answers.</em>
           </>
         }
-        desc="Answers reflect the live edition policy, not a prototype script."
+        desc="Answers reflect the live edition policy, fees, and convention regulations."
       />
-      <section className="section faq-list">
-        {rows.map(([question, answer], index) => (
-          <details key={question}>
-            <summary>
-              <span>{`0${index + 1}`.slice(-2)}</span>
-              {question}
-            </summary>
-            <p>{answer}</p>
-          </details>
-        ))}
+      <section className="section apple-faq-section">
+        <div className="apple-faq-list">
+          {rows.map(([question, answer], index) => (
+            <details className="apple-faq-card" key={question}>
+              <summary className="apple-faq-summary">
+                <div className="apple-faq-q-left">
+                  <span className="apple-faq-num">{`0${index + 1}`.slice(-2)}</span>
+                  <span className="apple-faq-question">{question}</span>
+                </div>
+                <span className="apple-faq-chevron" aria-hidden="true">
+                  <ChevronDown size={18} strokeWidth={2} />
+                </span>
+              </summary>
+              <div className="apple-faq-answer">
+                <p>{answer}</p>
+              </div>
+            </details>
+          ))}
+        </div>
       </section>
     </>
   );
