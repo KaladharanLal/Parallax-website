@@ -663,7 +663,7 @@ export function Home() {
             <em>the new perspectives.</em>
           </h2>
           <p>
-            One pass unlocks {edition.name}. Check the timetable, review the challenges,
+            One pass unlocks {edition?.name || 'Parallax 2026'}. Check the timetable, review the challenges,
             and secure your badge.
           </p>
           <div className="cta-action-group">
@@ -695,16 +695,16 @@ export function About() {
             <em>changes everything.</em>
           </>
         }
-        desc={`${edition.name} is a ${edition.organizer} convention hosted at ${edition.host}. The programme is published from a single live catalogue.`}
+        desc={`${edition?.name || 'Parallax 2026'} is a ${edition?.organizer || 'ISTE'} convention hosted at ${edition?.host || 'NSSCE'}. The programme is published from a single live catalogue.`}
       />
       <section className="section prose-grid">
         <article className="about-main-card">
           <Eyebrow>The Idea</Eyebrow>
           <h2>Curiosity brings us together.</h2>
           <p>
-            Named for the shift in perspective created by a change in viewpoint, {edition.name}{' '}
+            Named for the shift in perspective created by a change in viewpoint, {edition?.name || 'Parallax 2026'}{' '}
             invites students to look at technology and engineering from many angles. The convention
-            is planned by the {edition.organizer} and hosted at {edition.host}, {edition.city}.
+            is planned by the {edition?.organizer || 'ISTE'} and hosted at {edition?.host || 'NSSCE'}, {edition?.city || 'Palakkad'}.
           </p>
           <p>
             Every event in the catalogue is a real record in the convention database: title,
@@ -714,27 +714,27 @@ export function About() {
           <div className="about-facts">
             <div>
               <span>ORGANISER</span>
-              <b>{edition.organizer}</b>
+              <b>{edition?.organizer || 'ISTE'}</b>
             </div>
             <div>
               <span>HOST</span>
-              <b>{edition.host}</b>
+              <b>{edition?.host || 'NSSCE'}</b>
             </div>
             <div>
               <span>VENUE</span>
-              <b>{edition.venue}</b>
+              <b>{edition?.venue || 'Campus'}</b>
             </div>
             <div>
               <span>DATES</span>
-              <b>{dateRange(edition.startsAt, edition.endsAt)}</b>
+              <b>{dateRange(edition?.startsAt, edition?.endsAt)}</b>
             </div>
           </div>
         </article>
         <article className="host-card">
-          <img src={NSSCE} alt={`${edition.host} emblem`} />
+          <img src={NSSCE} alt={`${edition?.host || 'NSSCE'} emblem`} />
           <Eyebrow>Host Institution</Eyebrow>
-          <h3>{edition.host}</h3>
-          <p>{edition.city}</p>
+          <h3>{edition?.host || 'NSS College of Engineering'}</h3>
+          <p>{edition?.city || 'Palakkad, Kerala'}</p>
           <div className="host-rule" />
           <p>
             Convention pass: {money(policy?.passPricePaise)} per participant, including lunch on{' '}
@@ -1091,7 +1091,7 @@ export function PassPage() {
               <span className="apple-price-number">{priceRupees}</span>
               <span className="apple-price-tenure">/ pass</span>
             </div>
-            <p className="apple-price-note">{edition.name} Convention Pass</p>
+            <p className="apple-price-note">{edition?.name || 'Parallax 2026'} Convention Pass</p>
 
             <div className="apple-pass-benefits" style={{ margin: '24px 0 28px', width: '100%' }}>
               <div className="apple-benefit-row">
@@ -1282,10 +1282,10 @@ export function VenuePage() {
           <>
             Meet us at
             <br />
-            <em>{edition.city?.split(',')[0] || 'Palakkad'}.</em>
+            <em>{edition?.city?.split(',')[0] || 'Palakkad'}.</em>
           </>
         }
-        desc={`${edition.venue}, hosted by ${edition.host}.`}
+        desc={`${edition?.venue || 'Campus'}, hosted by ${edition?.host || 'NSSCE'}.`}
       />
       <section className="section venue-grid">
         <article className="venue-map-card">
@@ -1322,23 +1322,23 @@ export function VenuePage() {
         </article>
         <article className="venue-copy">
           <Eyebrow>Host Campus</Eyebrow>
-          <h2>{edition.host}</h2>
-          <p>{edition.city}</p>
+          <h2>{edition?.host || 'NSS College of Engineering'}</h2>
+          <p>{edition?.city || 'Palakkad, Kerala'}</p>
           <p>
-            Sessions run across {edition.venue}. Room numbers and lab assignments are published with each session in the
+            Sessions run across {edition?.venue || 'campus halls'}. Room numbers and lab assignments are published with each session in the
             live schedule; registration check-in opens at the campus main auditorium on both days.
           </p>
           <div className="detail-row">
             <span>Dates</span>
-            <b>{dateRange(edition.startsAt, edition.endsAt)}</b>
+            <b>{dateRange(edition?.startsAt, edition?.endsAt)}</b>
           </div>
           <div className="detail-row">
             <span>Venue</span>
-            <b>{edition.venue}</b>
+            <b>{edition?.venue || 'Campus'}</b>
           </div>
           <div className="detail-row">
             <span>City</span>
-            <b>{edition.city}</b>
+            <b>{edition?.city || 'Palakkad'}</b>
           </div>
           <div className="detail-row">
             <span>Transit Access</span>
@@ -1677,23 +1677,22 @@ export function ContactPage() {
 
 export function Footer() {
   const { edition } = useSite();
-  if (!edition) return null;
   return (
     <footer className="footer">
       <div className="footer-top">
-        <Link to="/" className="footer-brand" aria-label={`${edition.name} home`}>
-          <img src={LOGO} alt={edition.name} className="footer-logo" />
+        <Link to="/" className="footer-brand" aria-label={`${edition?.name || 'Parallax 2026'} home`}>
+          <img src={LOGO} alt={edition?.name || 'Parallax 2026'} className="footer-logo" />
         </Link>
         <p>
           A shift in perspective.
           <br />A leap in innovation.
         </p>
         <div className="footer-host">
-          <img src={ISTE} alt={`${edition.organizer} emblem`} />
+          <img src={ISTE} alt={`${edition?.organizer || 'ISTE'} emblem`} />
           <span>
-            Hosted by {edition.host}
+            Hosted by {edition?.host || 'NSSCE'}
             <br />
-            {edition.city}
+            {edition?.city || 'Palakkad'}
           </span>
         </div>
       </div>
@@ -1715,9 +1714,9 @@ export function Footer() {
       </div>
       <div className="footer-bottom">
         <span>
-          © {new Date().getFullYear()} {edition.name} · {edition.organizer}
+          © {new Date().getFullYear()} {edition?.name || 'Parallax 2026'} · {edition?.organizer || 'ISTE'}
         </span>
-        <span>{dateRange(edition.startsAt, edition.endsAt)}</span>
+        <span>{dateRange(edition?.startsAt, edition?.endsAt)}</span>
         <span className="social">
           <Ticket size={16} strokeWidth={1.4} /> Live convention platform
         </span>

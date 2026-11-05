@@ -154,11 +154,11 @@ export default function App() {
 
   // The boot animation already waits for isReady before completing.
   // On inner-page navigations we still need to wait for the site data.
-  if (site.loading && !site.edition && location.pathname !== '/') {
+  if (site.loading && !site.edition) {
     return <Loading label="Connecting to Parallax convention…" rows={0} />;
   }
 
-  if (site.error || (!site.loading && !site.edition)) {
+  if (site.error && !site.edition) {
     return (
       <div className="boot boot-error">
         <img src={LOGO} alt="Parallax" />
@@ -184,10 +184,10 @@ export default function App() {
       </a>
       {!chromeHidden ? (
         <header className="nav">
-          <Link to="/" className="brand" aria-label={`${site.edition.name} home`}>
+          <Link to="/" className="brand" aria-label={`${site.edition?.name || 'Parallax 2026'} home`}>
             <img src={ISTE} alt="ISTE" className="brand-logo-iste" />
             <span className="brand-divider" aria-hidden="true">|</span>
-            <img src={LOGO} alt={site.edition.name} className="brand-logo" />
+            <img src={LOGO} alt={site.edition?.name || 'Parallax 2026'} className="brand-logo" />
           </Link>
           <button
             className="menu-toggle"

@@ -613,7 +613,7 @@ function EventForm({ editionId, categories, initial, onDone, onClose }) {
           <select value={form.categoryId} onChange={(event) => set('categoryId', event.target.value)} required>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {category?.name || 'Category'}
               </option>
             ))}
           </select>
@@ -940,7 +940,7 @@ function CategoryManager({ editionId, categories, onChanged }) {
       <div className="category-list">
         {categories.map((category) => (
           <div className="category-row" key={category.id}>
-            <span>{category.name}</span>
+            <span>{category?.name || 'Untitled'}</span>
             <code>{category.slug}</code>
             <button
               className="table-action"
