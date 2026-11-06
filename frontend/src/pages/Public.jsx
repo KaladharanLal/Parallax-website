@@ -13,6 +13,7 @@ import {
   Code2,
   Cpu,
   HelpCircle,
+  Layers,
   Mail,
   MapPin,
   Navigation,

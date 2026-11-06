@@ -882,7 +882,7 @@ export class MascotBrain {
   scheduleAct(delay) {
     this.clearLater(this.actTimer);
     if (!this.route || this.reducedMotion) return;
-    const wait = delay ?? 900 + Math.random() * 1500;
+    const wait = delay ?? 320 + Math.random() * 640;
     this.actTimer = this.later(() => {
       this.actTimer = null;
       this.act();
@@ -899,7 +899,7 @@ export class MascotBrain {
     if (this.reducedMotion || this.tourActive) return;
     if (typeof document !== 'undefined' && document.hidden) return;
     if (this.state !== MASCOT_STATES.IDLE || this.bubbleOpen) {
-      this.scheduleAct(700);
+      this.scheduleAct(450);
       return;
     }
 
