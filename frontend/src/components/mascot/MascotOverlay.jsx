@@ -24,41 +24,6 @@ function fallbackRest(layout) {
   };
 }
 
-function TargetRing({ target }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!target) return undefined;
-    let raf = 0;
-
-    const update = () => {
-      const element = target.el;
-      const ring = ref.current;
-      if (!ring || !element || !element.isConnected) return;
-
-      const rect = element.getBoundingClientRect();
-      const visible =
-        rect.bottom > 84 &&
-        rect.top < window.innerHeight - 8 &&
-        rect.right > 0 &&
-        rect.left < window.innerWidth;
-
-      ring.style.opacity = visible ? '1' : '0';
-      ring.style.transform = `translate3d(${Math.round(rect.left - 6)}px, ${Math.round(rect.top - 6)}px, 0)`;
-      ring.style.width = `${Math.round(rect.width + 12)}px`;
-      ring.style.height = `${Math.round(rect.height + 12)}px`;
-
-      if (visible) raf = requestAnimationFrame(update);
-    };
-
-    update();
-    return () => cancelAnimationFrame(raf);
-  }, [target]);
-
-  if (!target) return null;
-  return <div ref={ref} className="mascot-ring" aria-hidden="true" />;
-}
-
 export default function MascotOverlay({ pathname, settings, onFail }) {
   const [layout, setLayout] = useState(computeLayout);
   const layoutRef = useRef(layout);
@@ -70,7 +35,6 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
   }));
   const [mascotState, setMascotState] = useState('idle');
   const [bubble, setBubble] = useState(null);
-  const [highlight, setHighlight] = useState(null);
   const [hovered, setHovered] = useState(false);
   const [gesture, setGesture] = useState(0);
   const [failed, setFailed] = useState(false);
@@ -102,7 +66,6 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
       lowPower: settingsRef.current.lowPower,
       onPose: setPose,
       onBubble: setBubble,
-      onHighlight: setHighlight,
       onState: setMascotState,
       onGesture: (type = 'wave') => setGesture(`${type}-${Date.now()}`),
     });
@@ -205,8 +168,6 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
         }}
       >
         <div className={`mascot-float${hovered ? ' is-hovered' : ''}`}>
-          <div className="mascot-ground" aria-hidden="true" />
-
           <MascotCanvas
             facing={pose.facing}
             state={mascotState}
@@ -240,7 +201,6 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
         </div>
       </div>
 
-      <TargetRing target={highlight} />
     </div>
   );
 }

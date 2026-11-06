@@ -27,7 +27,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { publicApi } from '../lib/api.js';
-import { useCardTilt, gsap, ScrollTrigger } from '../lib/motion.js';
+import { gsap, ScrollTrigger, useCardTilt } from '../lib/motion.js';
 
 import { useSite } from '../lib/site.jsx';
 import { date, dateRange, dayLabel, money, time, weekday } from '../lib/format.js';
@@ -316,9 +316,44 @@ function PreviewCard({
   mascotTarget,
   mascotHover,
 }) {
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return undefined;
+    let raf = null;
+
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.classList.add('is-tracking');
+      el.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
+      el.style.setProperty('--my', `${(y + 0.5) * 100}%`);
+      el.style.setProperty('--tx', `${-y * 10}deg`);
+      el.style.setProperty('--ty', `${x * 10}deg`);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => el.classList.remove('is-tracking'));
+    };
+
+    const onLeave = () => {
+      el.classList.remove('is-tracking');
+      el.style.setProperty('--tx', '0deg');
+      el.style.setProperty('--ty', '0deg');
+    };
+
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mousemove', onMove);
+      el.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
+
   return (
     <Link
       className="px-card"
+      ref={cardRef}
       to={to}
       data-reveal=""
       data-mascot-target={mascotTarget}
@@ -329,6 +364,7 @@ function PreviewCard({
         <img src={image} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />
       </div>
       <div className="px-card-scrim" aria-hidden="true" />
+      <div className="px-card-sheen" aria-hidden="true" />
       <img
         className="px-card-frame"
         src={MAIN_FRAME}
@@ -338,7 +374,7 @@ function PreviewCard({
         decoding="async"
       />
       <div className="px-card-body">
-        <span className="px-card-kicker">{kicker}</span>
+        {kicker ? <span className="px-card-kicker">{kicker}</span> : null}
         <h3 className="px-card-title">{title}</h3>
         <p className="px-card-copy">{copy}</p>
         {meta ? <span className="px-card-meta">{meta}</span> : null}
@@ -600,9 +636,6 @@ export function Home() {
   const categories = useAsync(() => publicApi.categories(slug), [slug], {
     enabled: Boolean(slug),
   });
-  const schedule = useAsync(() => publicApi.schedule(slug), [slug], {
-    enabled: Boolean(slug),
-  });
   const news = useAsync(() => publicApi.announcements(slug, { pageSize: 2 }), [slug], {
     enabled: Boolean(slug),
   });
@@ -611,10 +644,6 @@ export function Home() {
   const announcements = news.data?.data || [];
   const eventTotal = catalogue.data?.meta?.total ?? null;
   const categoryTotal = categories.data?.data?.length ?? null;
-  const scheduleDays = Array.isArray(schedule.data?.data) ? schedule.data.data : [];
-  const sessionTotal = scheduleDays.length
-    ? scheduleDays.reduce((sum, day) => sum + (day.items?.length || 0), 0)
-    : null;
   const days = Math.max(
     1,
     Math.round(
@@ -668,8 +697,13 @@ export function Home() {
         <div className="home-odyssey-panel" ref={odysseyRef}>
           <HeroOdyssey
             title={edition.name}
-            subtitle="Lighting Up The Future"
-            description={`One pass unlocks ${edition.name}. Explore the challenges, workshops, and ideas shaping the next perspective.`}
+            subtitle="ISTE state student convention"
+            description="One pass gets you into both days."
+            facts={[
+              `${days} days`,
+              dateRange(edition.startsAt, edition.endsAt),
+              `${edition.venue}, ${edition.city}`,
+            ]}
           />
         </div>
       </div>
@@ -678,55 +712,40 @@ export function Home() {
       <section className="px-preview" id="discover" aria-labelledby="px-preview-title">
         <div className="px-preview-inner">
           <header className="px-preview-head">
-            <div>
-              <Eyebrow>Inside the convention</Eyebrow>
-              <h2 id="px-preview-title">
-                Three ways <em>to look closer.</em>
-              </h2>
-            </div>
-            <p>
-              The edition, the {days}-day programme and the competition catalogue — one pass, one
-              shift in perspective.
-            </p>
+            <h2 id="px-preview-title">
+              What's <em>inside.</em>
+            </h2>
           </header>
 
           <div className="px-grid">
             <PreviewCard
               mascotTarget="home-edition"
-              mascotHover="The edition: the theme, the host campus and the dates — and why Parallax exists."
+              mascotHover="Who runs Parallax, where it happens and what it covers."
               kicker="01 / The Edition"
               title="About Parallax"
-              copy={`${edition.organizer || 'ISTE'} brings ${edition.name} to ${edition.host || 'campus'}: two days of engineering argued in public.`}
-              meta={edition.city || null}
-              cta="Learn More"
+              copy={`${edition.name} is the ${edition.organizer || 'ISTE'} convention at ${edition.host || 'NSSCE'}.`}
+              cta="Read more"
               to="/about"
               image={ABOUT_ART}
             />
             <PreviewCard
               mascotTarget="home-schedule"
-              mascotHover="The programme: both days, every briefing and round, published from the live catalogue."
+              mascotHover="Both days, every session, with times and rooms."
               kicker="02 / The Programme"
               title="Schedule"
-              copy={`Every briefing, round and workshop across ${days} days — published live from the convention catalogue.`}
-              meta={`${dateRange(edition.startsAt, edition.endsAt)}${
-                sessionTotal ? ` · ${sessionTotal} sessions` : ''
-              }`}
-              cta="View Schedule"
+              copy="Times, rooms and rounds for both days."
+              cta="See the schedule"
               to="/schedule"
               image={SCHEDULE_ART}
             />
             <PreviewCard
               mascotTarget="home-events"
-              mascotHover="The competitions: hackathons, hardware builds, design sprints and papers, each with its fee basis."
+              mascotHover="Hackathons, hardware builds, design sprints and paper sessions."
               kicker="03 / The Competitions"
-              title="More Events"
-              copy={`${
-                eventTotal ? `${eventTotal} competitions` : 'The competition programme'
-              } across ${
-                categoryTotal ? `${categoryTotal} tracks` : 'every track'
-              }: hackathons, hardware builds, design sprints and paper sessions.`}
-              meta={`${eventTotal ?? '—'} events · ${categoryTotal ?? '—'} tracks`}
-              cta="Explore Events"
+              title="Events"
+              copy="Hackathons, hardware builds, design sprints and papers."
+              meta={`${eventTotal ?? 0} events in ${categoryTotal ?? 0} categories`}
+              cta="See all events"
               to="/events"
               image={EVENTS_ART}
             />
@@ -736,82 +755,6 @@ export function Home() {
 
       {/* Chapter 02: All-Access Pass Architecture with Layer Parallax */}
       <PassHighlightSection policy={policy} />
-
-      {/* Chapter 03: Architectural Facts with Floor Grid Runway */}
-      <section className="facts section tf-parallax-section">
-        <div className="tf-parallax-bg" data-parallax-speed="0.28" aria-hidden="true">
-          <img src={PARALLAX_BG_PEDESTAL} alt="" className="tf-bg-img" />
-          <div className="tf-vignette-overlay" />
-        </div>
-        <div className="fact tf-parallax-fg">
-          <span>01 / FORMAT</span>
-          <b>
-            Individual
-            <br />& team events
-          </b>
-        </div>
-        <div className="fact tf-parallax-fg">
-          <span>02 / DURATION</span>
-          <b>
-            {days} days
-            <br />
-            together
-          </b>
-        </div>
-        <div className="fact tf-parallax-fg">
-          <span>03 / WHEN</span>
-          <b>
-            {date(edition.startsAt)}
-            <br />
-            {date(edition.endsAt)}
-          </b>
-        </div>
-        <div className="fact tf-parallax-fg">
-          <span>04 / WHERE</span>
-          <b>
-            {edition.venue}
-            <br />
-            {edition.city}
-          </b>
-        </div>
-      </section>
-
-      <section className="cta section tf-parallax-section">
-        <div className="tf-parallax-bg" data-parallax-speed="0.18" aria-hidden="true">
-          {/* <img src={PARALLAX_DEPTH_BG} alt="" className="tf-bg-img" /> */}
-          <div className="tf-vignette-overlay" />
-        </div>
-
-        <div className="tf-parallax-fg">
-          <div className="cta-emblem-center" aria-hidden="true">
-            <img src={LOGO} alt="" className="cta-emblem-img" />
-          </div>
-          <Eyebrow>Your Next Perspective</Eyebrow>
-          <h2>
-            Make room for
-            <br />
-            <em>the new perspectives.</em>
-          </h2>
-          <p>
-            One pass unlocks {edition?.name || 'Parallax 2026'}. Check the timetable, review the
-            challenges, and secure your badge.
-          </p>
-          <div className="cta-action-group">
-            <Link to="/pass" className="lusion-btn lusion-btn-primary">
-              <span>Get your pass</span>
-              <span className="lusion-btn-icon">
-                <ArrowRight size={15} strokeWidth={2.2} />
-              </span>
-            </Link>
-            <Link to="/events" className="lusion-btn lusion-btn-ghost">
-              <span>Explore events</span>
-              <span className="lusion-btn-icon">
-                <ArrowUpRight size={15} strokeWidth={2.2} />
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {announcements.length ? (
         <section className="section news-section">
@@ -845,47 +788,44 @@ export function About() {
   return (
     <>
       <PageTitle
-        kicker="About the Edition"
+        kicker="About"
         title={
           <>
-            A different angle
+            About
             <br />
-            <em>changes everything.</em>
+            <em>{edition?.name || 'Parallax 2026'}.</em>
           </>
         }
-        desc={`${edition?.name || 'Parallax 2026'} is a ${edition?.organizer || 'ISTE'} convention hosted at ${edition?.host || 'NSSCE'}. The programme is published from a single live catalogue.`}
+        desc={`${edition?.organizer || 'ISTE'} brings the convention to ${edition?.host || 'NSSCE'}, ${edition?.city || 'Palakkad'}. Two days, one campus.`}
       />
       <section className="section prose-grid">
         <HudFrame as="article" className="about-main-card">
           <Eyebrow>The Idea</Eyebrow>
-          <h2>Curiosity brings us together.</h2>
+          <h2>Two days of student engineering.</h2>
           <p>
-            Named for the shift in perspective created by a change in viewpoint,{' '}
-            {edition?.name || 'Parallax 2026'} invites students to look at technology and
-            engineering from many angles. The convention is planned by the{' '}
-            {edition?.organizer || 'ISTE'} and hosted at {edition?.host || 'NSSCE'},{' '}
-            {edition?.city || 'Palakkad'}.
+            {edition?.name || 'Parallax 2026'} is run by the {edition?.organizer || 'ISTE'} chapter
+            at {edition?.host || 'NSSCE'}, {edition?.city || 'Palakkad'}. Individuals and teams
+            build, compete and present across both days.
           </p>
           <p>
-            Every event in the catalogue is a real record in the convention database: title,
-            category, format, schedule, capacity and fees all come from the same source the
+            Every event, time, room and fee on this site comes from the same catalogue the
             organisers edit.
           </p>
           <div className="about-facts">
             <div>
-              <span>ORGANISER</span>
+              <span>Organiser</span>
               <b>{edition?.organizer || 'ISTE'}</b>
             </div>
             <div>
-              <span>HOST</span>
+              <span>Host</span>
               <b>{edition?.host || 'NSSCE'}</b>
             </div>
             <div>
-              <span>VENUE</span>
+              <span>Venue</span>
               <b>{edition?.venue || 'Campus'}</b>
             </div>
             <div>
-              <span>DATES</span>
+              <span>Dates</span>
               <b>{dateRange(edition?.startsAt, edition?.endsAt)}</b>
             </div>
           </div>
@@ -897,7 +837,7 @@ export function About() {
           <p>{edition?.city || 'Palakkad, Kerala'}</p>
           <div className="host-rule" />
           <p>
-            Convention pass: {money(policy?.passPricePaise)} per participant, including lunch on{' '}
+            Pass: {money(policy?.passPricePaise)}, lunch included on{' '}
             {policy?.lunchIncludedDays?.length || 0} days.
           </p>
         </HudFrame>
@@ -943,15 +883,15 @@ export function EventsPage() {
   return (
     <>
       <PageTitle
-        kicker="Event Directory"
+        kicker="Events"
         title={
           <>
-            Choose your
+            All
             <br />
-            <em>next challenge.</em>
+            <em>events.</em>
           </>
         }
-        desc="Search the live catalogue. Fees, formats, capacity and registration state come straight from the convention database."
+        desc="Search by name, category or format."
       />
       <div className="exc-shell">
         <section className="section directory exc-catalogue">
@@ -1020,7 +960,7 @@ export function EventsPage() {
                 >
                   <header className="exc-day-head">
                     <span className="exc-day-index">
-                      Day {String(groupIndex + 1).padStart(2, '0')}
+                      Day {groupIndex + 1}
                     </span>
                     <h2 className="exc-day-title" id={`exc-day-${group.key}`}>
                       {group.label}
@@ -1283,21 +1223,21 @@ export function PassPage() {
   return (
     <>
       <PageTitle
-        kicker="Convention Pass"
+        kicker="Pass"
         title={
           <>
-            One pass. Two days.
+            One pass.
             <br />
-            <em>Your event choices.</em>
+            <em>Both days.</em>
           </>
         }
-        desc="A single registration unlocks full floor access across both days. The pass, included allowance and add-ons are transparently structured."
+        desc="Lunch included. Pick your events, add more if you want."
       />
 
       <section className="section apple-pass-page-section">
         <div className="apple-pass-page-grid">
           <HudFrame as="article" className="apple-pass-pricing-box apple-pass-page-card">
-            <span className="apple-price-caption">ALL-ACCESS PASS</span>
+            <span className="apple-price-caption">All-access pass</span>
             <div className="apple-price-amount">
               <span className="apple-price-currency">₹</span>
               <span className="apple-price-number">{priceRupees}</span>
@@ -1348,7 +1288,7 @@ export function PassPage() {
           </HudFrame>
 
           <HudFrame as="article" className="apple-pass-copy-card">
-            <span className="apple-pass-kicker">PRICING ARCHITECTURE</span>
+            <span className="apple-pass-kicker">How it works</span>
             <h2>
               Pass first.
               <br />
@@ -1390,7 +1330,7 @@ export function PassPage() {
             </ol>
 
             <div className="apple-cap-well">
-              <span className="apple-cap-title">INCLUDED EVENT VALUE CAP</span>
+              <span className="apple-cap-title">Included event value</span>
               <b className="apple-cap-amount">
                 {valueCap} <small>live edition policy</small>
               </b>
@@ -1428,15 +1368,15 @@ export function SchedulePage() {
   return (
     <>
       <PageTitle
-        kicker="The Programme"
+        kicker="Schedule"
         title={
           <>
-            Two days of
+            The
             <br />
-            <em>new perspectives.</em>
+            <em>schedule.</em>
           </>
         }
-        desc="Every published session, ordered by its live start time and room assignment."
+        desc="Every session in order, with times and rooms."
         aside={
           totalSessions > 0 ? (
             <div className="schedule-stat-pill">
@@ -1467,7 +1407,7 @@ export function VenuePage() {
   return (
     <>
       <PageTitle
-        kicker="The Venue"
+        kicker="Venue"
         title={
           <>
             Meet us at
@@ -1475,7 +1415,7 @@ export function VenuePage() {
             <em>{edition?.city?.split(',')[0] || 'Palakkad'}.</em>
           </>
         }
-        desc={`${edition?.venue || 'Campus'}, hosted by ${edition?.host || 'NSSCE'}.`}
+        desc={`${edition?.venue || 'Campus'}, ${edition?.city || 'Palakkad'}.`}
       />
       <section className="section venue-grid">
         <HudFrame as="article" className="venue-map-card">
@@ -1605,25 +1545,22 @@ export function FAQPage() {
   return (
     <>
       <PageTitle
-        kicker="Good to Know"
+        kicker="FAQ"
         title={
           <>
-            Questions, meet
+            Common
             <br />
-            <em>clear answers.</em>
+            <em>questions.</em>
           </>
         }
-        desc="Answers reflect the live edition policy, fees, and convention regulations."
+        desc="Passes, events, verification and refunds."
       />
       <section className="section apple-faq-section">
         <div className="apple-faq-list">
-          {rows.map(([question, answer], index) => (
+          {rows.map(([question, answer]) => (
             <details className="apple-faq-card" key={question}>
               <summary className="apple-faq-summary">
-                <div className="apple-faq-q-left">
-                  <span className="apple-faq-num">{`0${index + 1}`.slice(-2)}</span>
-                  <span className="apple-faq-question">{question}</span>
-                </div>
+                <span className="apple-faq-question">{question}</span>
                 <span className="apple-faq-chevron" aria-hidden="true">
                   <ChevronDown size={18} strokeWidth={2} />
                 </span>
@@ -1642,7 +1579,7 @@ export function FAQPage() {
 const TEAM_GROUPS = [
   {
     title: 'Faculty Leadership',
-    description: 'The faculty members guiding and supporting the convention.',
+    description: 'Faculty guiding the convention.',
     members: [
       {
         name: 'Dr. Sudeep U',
@@ -1658,7 +1595,7 @@ const TEAM_GROUPS = [
   },
   {
     title: 'Student Leadership',
-    description: 'The student leadership driving Parallax forward.',
+    description: 'Student leads.',
     members: [
       {
         name: 'Kaladharan Lal',
@@ -1674,7 +1611,7 @@ const TEAM_GROUPS = [
   },
   {
     title: 'Web-Dev Team',
-    description: 'The brains behind this dynamic and advanced full-stack web app.',
+    description: 'Built the site.',
     members: [
       {
         name: 'Midhun K M',
@@ -1684,10 +1621,11 @@ const TEAM_GROUPS = [
         link: 'https://midhunkm.pages.dev/',
       },
       {
-        name: 'Arjun Liji',
+        name: 'Arjun M L',
         role: 'Frontend',
         image: 'frontend.jpg',
         featured: true,
+        link: 'https://arjc.github.io/',
       },
       {
         name: 'Kaladharan Lal',
@@ -1699,8 +1637,7 @@ const TEAM_GROUPS = [
   },
   {
     title: 'Core Organising Team',
-    description:
-      'The coordinators responsible for bringing every aspect of the convention together.',
+    description: 'Events, design, publicity and finance.',
     members: [
       {
         name: 'Athira Haridas K V',
@@ -1730,7 +1667,7 @@ const TEAM_GROUPS = [
       {
         name: 'Anirudh R',
         role: 'Finance Coordinator',
-        image: 'finance-coordinator.jpg',
+        image: 'finance-coordinator.jpeg',
       },
       {
         name: 'Sandra H Menon',
@@ -1829,23 +1766,21 @@ export function TeamPage() {
   return (
     <>
       <PageTitle
-        kicker="The People Behind Parallax"
+        kicker="Team"
         title={
           <>
-            Behind every great event
+            Who runs
             <br />
-            <em>is a great team.</em>
+            <em>Parallax.</em>
           </>
         }
-        desc="Meet the people whose dedication, teamwork and vision brought Parallax to life."
+        desc="Faculty, student leads and the web team."
       />
 
       <section className="team-page">
-        {TEAM_GROUPS.map((group, index) => (
+        {TEAM_GROUPS.map((group) => (
           <section className="team-group" key={group.title}>
             <div className="team-group-heading">
-              <span className="team-index">{String(index + 1).padStart(2, '0')}</span>
-
               <div>
                 <h2>{group.title}</h2>
                 <p>{group.description}</p>
@@ -1895,20 +1830,20 @@ export function ContactPage() {
   return (
     <>
       <PageTitle
-        kicker="Official Inquiries"
+        kicker="Contact"
         title={
           <>
-            Let’s get
+            Talk to
             <br />
-            <em>in touch.</em>
+            <em>the team.</em>
           </>
         }
-        desc="Have questions about the convention, passes, challenge schedules, or campus logistics? Our organising team responds directly."
+        desc="Email us about passes, events or travel."
         aside={
           <div className="contact-status-card">
             <div className="contact-status-indicator">
               <span className="contact-status-pulse" />
-              <span>Desk Online</span>
+              <span>Desk online</span>
             </div>
             <span className="contact-status-hours">Typical response &lt; 4 hours</span>
           </div>
@@ -1924,11 +1859,10 @@ export function ContactPage() {
               <Mail size={22} strokeWidth={1.8} />
             </div>
             <div className="contact-channel-body">
-              <span className="contact-channel-tag">DIRECT INQUIRIES</span>
-              <h3 className="contact-channel-title">Official Convention Email</h3>
+              <span className="contact-channel-tag">Email</span>
+              <h3 className="contact-channel-title">Email the organisers</h3>
               <p className="contact-channel-desc">
-                For pass assistance, corporate partnerships, certificates, or general convention
-                inquiries.
+                Passes, partnerships, certificates and anything else.
               </p>
               <a href={`mailto:${email}`} className="contact-channel-link">
                 <span>{email}</span>
@@ -1943,11 +1877,11 @@ export function ContactPage() {
               <Building2 size={22} strokeWidth={1.8} />
             </div>
             <div className="contact-channel-body">
-              <span className="contact-channel-tag">CAMPUS DESK</span>
-              <h3 className="contact-channel-title">Host Institution</h3>
+              <span className="contact-channel-tag">Campus</span>
+              <h3 className="contact-channel-title">Host campus</h3>
               <p className="contact-channel-desc">
-                {edition?.host || 'NSS College of Engineering'}, {edition?.city || 'Palakkad'}. Main
-                desk at the auditorium.
+                {edition?.host || 'NSS College of Engineering'}, {edition?.city || 'Palakkad'}.
+                Desk at the auditorium.
               </p>
               <Link to="/venue" className="contact-channel-link">
                 <span>Campus Location &amp; Directions</span>
@@ -1962,11 +1896,10 @@ export function ContactPage() {
               <ShieldCheck size={22} strokeWidth={1.8} />
             </div>
             <div className="contact-channel-body">
-              <span className="contact-channel-tag">STUDENT PORTAL</span>
-              <h3 className="contact-channel-title">Self-Service Console</h3>
+              <span className="contact-channel-tag">Portal</span>
+              <h3 className="contact-channel-title">Student portal</h3>
               <p className="contact-channel-desc">
-                Review your registered sessions, team credentials, attendance QR tokens, and
-                verification status.
+                Your sessions, team, entry QR and verification status.
               </p>
               <Link to="/portal" className="contact-channel-link">
                 <span>Open Student Portal</span>
@@ -1980,11 +1913,10 @@ export function ContactPage() {
         <div className="contact-dispatch-wrap">
           <div className="contact-dispatch-header">
             <div className="contact-dispatch-head-left">
-              <span className="contact-dispatch-kicker">DIRECT TRANSMISSION</span>
-              <h2 className="contact-dispatch-title">Send a message to the organisers</h2>
+              <span className="contact-dispatch-kicker">Message</span>
+              <h2 className="contact-dispatch-title">Send a message</h2>
               <p className="contact-dispatch-desc">
-                Select your category and fill out the details below. We'll prepare your dispatch
-                with the organising committee.
+                Pick a category and write below. It goes to the organising inbox.
               </p>
             </div>
             <div className="contact-dispatch-head-right">
@@ -2025,7 +1957,7 @@ export function ContactPage() {
                   id="contact-name"
                   type="text"
                   className="contact-input"
-                  placeholder="e.g. Alex Kumar"
+                  placeholder="e.g. Warner Stark"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -2042,7 +1974,7 @@ export function ContactPage() {
                   id="contact-email"
                   type="email"
                   className="contact-input"
-                  placeholder="e.g. alex@college.edu"
+                  placeholder="e.g. warner@college.ac.in"
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
                   required
@@ -2069,7 +2001,7 @@ export function ContactPage() {
 
             <div className="contact-form-footer">
               <button type="submit" className="contact-submit-btn">
-                <span>Dispatch Email Inquiry</span>
+                <span>Send email</span>
                 <Send size={15} strokeWidth={2} />
               </button>
 
@@ -2122,10 +2054,7 @@ export function Footer() {
         >
           <img src={LOGO} alt={edition?.name || 'Parallax 2026'} className="footer-logo" />
         </Link>
-        <p>
-          A shift in perspective.
-          <br />A leap in innovation.
-        </p>
+        <p>Two days of events, talks and workshops.</p>
         <div className="footer-host">
           <img src={ISTE} alt={`${edition?.organizer || 'ISTE'} emblem`} />
           <span>

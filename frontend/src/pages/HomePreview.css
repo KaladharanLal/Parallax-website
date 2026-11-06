@@ -9,24 +9,8 @@
   isolation: isolate;
   padding: clamp(64px, 7vw, 110px) 6%;
   border-top: 1px solid rgba(120, 180, 230, 0.09);
-  background:
-    radial-gradient(80% 60% at 50% 0%, rgba(26, 60, 96, 0.24) 0%, transparent 65%),
-    linear-gradient(180deg, #060910 0%, #070b12 60%, #06090f 100%);
+  background: transparent;
   overflow: hidden;
-}
-
-.px-preview::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(96, 156, 204, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 156, 204, 0.055) 1px, transparent 1px);
-  background-size: 72px 72px;
-  -webkit-mask-image: radial-gradient(70% 70% at 50% 40%, #000 0%, transparent 85%);
-  mask-image: radial-gradient(70% 70% at 50% 40%, #000 0%, transparent 85%);
-  pointer-events: none;
-  z-index: -1;
 }
 
 .px-preview-inner {
@@ -114,12 +98,63 @@
   isolation: isolate;
   color: inherit;
   text-decoration: none;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Resting pose: a gentle lean back plus the per-card fan angle and depth.
+     The mouse-tilt variables (--tx/--ty) stay at zero until the cursor is on
+     the card, so the arc is what you see at rest. The reveal animation drives
+     the `translate` property, so the arc/lift live in `transform` here. */
+  --mx: 50%;
+  --my: 50%;
+  --tx: 0deg;
+  --ty: 0deg;
+  --rx: -6deg;
+  --ry: 0deg;
+  --depth: 0px;
+  --lift: 0px;
+  --sheen: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  transform:
+    translateY(var(--lift))
+    translateZ(var(--depth))
+    rotateX(calc(var(--rx) + var(--tx)))
+    rotateY(calc(var(--ry) + var(--ty)));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), --sheen 0.3s ease;
+}
+
+/* While the cursor tracks the card we snap the transform so the tilt follows
+   the mouse without the lag of the hover easing. */
+.px-card.is-tracking {
+  transition: transform 0.08s linear, --sheen 0.1s linear;
+}
+
+/* The three panels sit in a shallow arc: the outer two turn back and recede
+   while the centre one steps forward. */
+@media (min-width: 1100px) {
+  .px-grid {
+    perspective: 1250px;
+  }
+
+  .px-card:nth-child(1) {
+    --ry: 12deg;
+    --depth: -64px;
+  }
+
+  .px-card:nth-child(2) {
+    --ry: 0deg;
+    --depth: 38px;
+    z-index: 2;
+  }
+
+  .px-card:nth-child(3) {
+    --ry: -12deg;
+    --depth: -64px;
+  }
 }
 
 @media (hover: hover) {
   .px-card:hover {
-    transform: translateY(-8px);
+    --lift: -12px;
+    --sheen: 1;
   }
 }
 
@@ -133,6 +168,8 @@
   overflow: hidden;
   border-radius: 3cqw;
   background: #05090f;
+  transform-style: preserve-3d;
+  transform: translateZ(2px);
 }
 
 .px-card-media img {
@@ -164,6 +201,8 @@
     rgba(3, 7, 13, 0.99) 100%
   );
   pointer-events: none;
+  transform-style: preserve-3d;
+  transform: translateZ(1px);
 }
 
 .px-card-frame {
@@ -176,6 +215,8 @@
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.6));
+  transform-style: preserve-3d;
+  transform: translateZ(0px);
 }
 
 .px-card:hover .px-card-frame {
@@ -193,25 +234,25 @@
   align-items: flex-start;
   gap: 0.5em;
   pointer-events: auto;
+  transform-style: preserve-3d;
+  transform: translateZ(6px);
 }
 
-.px-card-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
-  font-family: var(--mono);
-  font-size: clamp(8px, 2.3cqw, 10px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #5ecbfd;
-  font-weight: 600;
-}
-
-.px-card-kicker::before {
-  content: '';
-  width: 12px;
-  height: 2px;
-  background: #38bdf8;
+/* Sheen: a soft radial highlight that tracks the cursor. */
+.px-card-sheen {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, calc(0.10 * var(--sheen, 0))),
+    rgba(255, 255, 255, 0) 55%
+  );
+  mix-blend-mode: screen;
+  opacity: var(--sheen, 0);
+  transition: opacity 0.3s ease;
 }
 
 .px-card-title {
@@ -257,11 +298,10 @@
   border: 0;
   background: transparent;
   color: #7dd3fc;
-  font-family: var(--mono);
-  font-size: clamp(9px, 2.3cqw, 11px);
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-family: var(--sans);
+  font-size: clamp(10.5px, 2.9cqw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
   transition: color 0.2s ease;
 }
 
@@ -271,7 +311,7 @@
 }
 
 .px-card:hover .px-card-cta {
-  color: #ffffff;
+  color: #e0f2fe;
 }
 
 .px-card:hover .px-card-cta svg {
@@ -324,10 +364,13 @@
     transition: none;
   }
 
-  .px-card:hover,
   .px-card:hover .px-card-media img,
   .px-card:hover .px-card-cta svg {
     transform: none;
+  }
+
+  .px-card:hover {
+    --lift: 0px;
   }
 }
 
@@ -363,21 +406,18 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(112, 178, 228, 0.24);
-  background: rgba(8, 18, 30, 0.78);
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(190, 220, 243, 0.9);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(190, 214, 232, 0.6);
 }
 
 .exc-catalogue .results-sort svg {
-  color: #5ec9ff;
-  opacity: 0.9;
+  color: inherit;
+  opacity: 0.75;
 }
 
 .exc-catalogue .pager {

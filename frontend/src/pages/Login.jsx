@@ -136,7 +136,7 @@ export default function Login() {
                     backgroundColor: '#ffffff',
                     color: '#1f1f1f',
                     border: '1px solid #dadce0',
-                    borderRadius: '12px',
+                    borderRadius: '9999px',
                     fontSize: '15px',
                     fontWeight: '600',
                     fontFamily: 'inherit',

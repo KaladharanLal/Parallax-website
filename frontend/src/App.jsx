@@ -3,7 +3,6 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-r
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useAuth } from './lib/auth.jsx';
 import { useSite } from './lib/site.jsx';
-import { ThemeCustomizer } from './lib/theme.jsx';
 import { AppErrorBoundary, Button, ErrorBox, Loading } from './components/ui.jsx';
 import { initSmoothScroll, gsap } from './lib/motion.js';
 import { SamaritanBootLoader } from './components/SamaritanBootLoader.jsx';
@@ -281,7 +280,6 @@ export default function App() {
       </main>
 
       {!chromeHidden ? <Footer edition={site.edition} /> : null}
-      <ThemeCustomizer />
       <MascotProvider />
     </>
   );

@@ -2279,8 +2279,7 @@ h3 {
 }
 
 .about-facts span {
-  font: 9.5px var(--mono);
-  letter-spacing: 0.14em;
+  font: 12px var(--sans);
   color: var(--muted-dark);
 }
 
@@ -3798,4 +3797,68 @@ h3 {
   font-weight: 500;
   padding: 8px 16px;
   animation: fadeIn 0.2s ease;
+}
+
+
+/* ============================================================
+   QUIET LABELS — no shouted caps, no tracked-out micro type
+   ============================================================ */
+.hero-status-tag, .badge, .badge-sub, .badge-role-pill, .button, .field > span,
+.contact-field-label, .contact-fast-stat span, .mono-note, .sched-legend-item,
+.sched-range-pill, .sched-head-sub, .sched-day-date, .sched-block-time,
+.sched-agenda-time em, .sched-agenda-head span, .sched-gutter-label,
+.sched-foot-note, .schedule-stat-label, .schedule-parallel-badge, .stat-card span,
+.event-meta, .exc-plaque, .exc-eyebrow, .exc-action, .px-card-meta,
+.apple-schedule-kicker, .apple-pass-kicker, .apple-pass-edition, .apple-pass-badge,
+.apple-price-caption, .apple-cap-amount small, .cap-callout small, .apple-day-pill,
+.apple-event-venue, .apple-event-meta-top, .apple-event-status, .card-status-pill,
+.hero-meter-label, .hero-floating-chip, .mascot-bubble-kicker, .boot p, .login-divider,
+.checkin-result > span, .admin-sidebar-heading, .links .portal-link, .day-kicker,
+.lusion-meta-venue, .lusion-status-corner, .lusion-cue-text, .lusion-head-kicker,
+.lusion-intro-badge, .lusion-cta-pill, .pro-price-caption, .pro-pass-badge,
+.ho-facts li, .hero-scrub-meter, .contact-topic-chip {
+  font-family: var(--sans) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 500 !important;
+}
+
+/* Label chips read as captions, not pills. */
+.badge, .badge-role-pill, .badge-slot, .card-status-pill, .contact-topic-chip,
+.exc-action, .exc-plaque, .hero-floating-chip, .hero-kicker-badge, .hero-reg-status,
+.hero-scrub-meter, .lusion-cta-pill, .lusion-head-kicker, .lusion-intro-badge,
+.lusion-status-corner, .sched-range-pill, .apple-pass-badge, .apple-event-status,
+.links .portal-link, .skip, .mascot-show, .mascot-hide {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+/* Status dots and logo keep their colour, lose the neon halo. */
+.brand img.brand-logo-iste, .contact-topic-chip.is-active, .dot-amber, .dot-cyan,
+.dot-lime, .event-dot, .hero-pulse-dot, .status-live-dot {
+  box-shadow: none !important;
+}
+
+.field textarea:focus, .contact-textarea:focus {
+  box-shadow: none !important;
+  border-color: rgba(96, 180, 255, 0.45) !important;
+}
+
+.apple-pass-btn,
+.apple-pass-btn:hover,
+.pro-pass-btn,
+.pro-pass-btn:hover {
+  box-shadow: none !important;
+}
+
+/* Pass-page micro labels sit inside deeper selectors; anchor them to the app root. */
+#root .apple-pass-kicker,
+#root .apple-pass-edition,
+#root .apple-pass-badge,
+#root .apple-price-caption,
+#root .apple-cap-title {
+  font-family: var(--sans) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 500 !important;
 }

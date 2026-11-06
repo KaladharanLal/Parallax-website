@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import "./HeroOdyssey.css";
 
 const VERTEX_SRC = `
@@ -187,9 +187,10 @@ function Lightning({
 }
 
 export default function HeroOdyssey({
-  ttl = "ISTE 25th State",
+  ttl = "ISTE 25th Annual State",
   sub = "Student Convention",
   desc = "Explore a convention built for bold ideas, practical engineering, and new perspectives.",
+  facts = [],
   beamSize = 1.7,
   beamOffset = 0.6,
 }) {
@@ -198,60 +199,32 @@ export default function HeroOdyssey({
       <div className="ho-container">
 
         <div className="ho-content">
-          {/* <div className="ho-pill ho-item" style={{ "--ho-i": 0 }}>
-            <span>Join us for the next perspective</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </div> */}
-          <h1 id="home-hero-title" className="ho-title ho-item" style={{ "--ho-i": 1 }}>
+          <h1 id="home-hero-title" className="ho-title ho-item" style={{ "--ho-i": 0 }}>
             {ttl}
           </h1>
-          <h2 className="ho-subtitle ho-item" style={{ "--ho-i": 2 }}>
+          <h2 className="ho-subtitle ho-item" style={{ "--ho-i": 1 }}>
             {sub}
           </h2>
-          <p className="ho-desc ho-item" style={{ "--ho-i": 3 }}>
+          <p className="ho-desc ho-item" style={{ "--ho-i": 2 }}>
             {desc}
           </p>
-                    {/* Event facts */}
-          <div
-            className="ho-facts ho-item"
-            style={{
-              "--ho-i": 5,
-              background: "transparent",
-              border: "none",
-              boxShadow: "none",
-              fontSize: "0.72rem",
-              letterSpacing: "0.5ch",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              whiteSpace: "nowrap"
-            }}
-            aria-label="Event facts"
-          >
-            <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
-              Individual &amp; team events
-            </span>
-            <span className="ho-facts-separator" aria-hidden="true" style={{ display: "none" }}>  •  </span>
-            <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
-              2 days together
-            </span>
-            <span className="ho-facts-separator" aria-hidden="true" style={{ display: "none" }}>  •  </span>
-            <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
-              8 & 9 January 2027
-            </span>
-            <span className="ho-facts-separator" aria-hidden="true" style={{ display: "none" }}>  •  </span>
-            <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
-              NSS College Of Engineering, Palakkad
-            </span>
-          </div>
+          {facts.length ? (
+            <ul className="ho-facts ho-item" style={{ "--ho-i": 3 }} aria-label="Event facts">
+              {facts.map((fact) => (
+                <li key={fact}>{fact}</li>
+              ))}
+            </ul>
+          ) : null}
           <button
             type="button"
-            className="ho-cta ho-item"
+            className="ho-cta ho-item lusion-btn lusion-btn-primary"
             style={{ "--ho-i": 4 }}
             onClick={() => window.scrollTo({ top: 150, behavior: "smooth" })}
           >
-            Dive in
-            <ArrowDown size={16} aria-hidden="true" />
+            <span>Dive in</span>
+            <span className="lusion-btn-icon">
+              <ArrowDown size={15} strokeWidth={2.2} aria-hidden="true" />
+            </span>
           </button>
         </div>
 
@@ -259,7 +232,6 @@ export default function HeroOdyssey({
 
       <div className="ho-bg" aria-hidden="true">
         <div className="ho-overlay" />
-        <div className="ho-glow" />
         <div className="ho-beam">
           <Lightning size={beamSize} xOffset={beamOffset} />
         </div>
