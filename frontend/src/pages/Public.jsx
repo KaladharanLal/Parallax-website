@@ -490,6 +490,61 @@ function PassHighlightSection({ policy }) {
   );
 }
 
+const HOMEPAGE_TEAM_ROLES = [
+  'Chairperson',
+  'Secretary',
+  'Faculty Chairperson',
+  'Faculty Secretary',
+];
+
+function TeamPreviewSection() {
+  const allMembers = TEAM_GROUPS.flatMap(
+    (group) => group.members
+  );
+
+  const previewMembers = HOMEPAGE_TEAM_ROLES
+    .map((role) =>
+      allMembers.find((member) => member.role === role)
+    )
+    .filter(Boolean);
+
+  return (
+    <section className="section team-preview-section">
+      <SectionHead
+        kicker="The People Behind Parallax"
+        title="A team behind the vision."
+        action={
+          <Link to="/team" className="text-link">
+            Meet the entire team
+            <ArrowRight size={15} />
+          </Link>
+        }
+      />
+
+      <div className="team-preview-grid">
+        {previewMembers.map((member) => (
+          <TeamMemberCard
+            key={member.role}
+            member={member}
+          />
+        ))}
+      </div>
+
+      <div className="team-preview-footer">
+        <p>
+          Every idea, every detail, every effort —
+          brought together by one team.
+        </p>
+
+        <Link to="/team" className="text-link">
+          Discover the people behind Parallax
+          <ArrowRight size={15} />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function Home() {
   const { edition, policy, config } = useSite();
   const slug = edition?.slug;
@@ -678,6 +733,7 @@ export function Home() {
           </div>
         </div>
       </section>
+      <TeamPreviewSection />
     </>
   );
 }
@@ -1451,6 +1507,180 @@ export function FAQPage() {
   );
 }
 
+const TEAM_GROUPS = [
+  {
+    title: 'Faculty Leadership',
+    description: 'The faculty members guiding and supporting the convention.',
+    members: [
+      {
+        name: 'Dr. Sudeep U',
+        role: 'Faculty Chairperson',
+        image: 'faculty-chairperson.jpg',
+      },
+      {
+        name: 'Dr. Praseeda K I',
+        role: 'Faculty Secretary',
+        image: 'faculty-secretary.jpg',
+      },
+    ],
+  },
+  {
+    title: 'Student Leadership',
+    description: 'The student leadership driving Parallax forward.',
+    members: [
+      {
+        name: 'Kaladharan Lal',
+        role: 'Chairperson',
+        image: 'chairperson.jpg',
+      },
+      {
+        name: 'Student Name',
+        role: 'Secretary',
+        image: 'secretary.jpg',
+      },
+    ],
+  },
+  {
+    title: 'Core Organising Team',
+    description: 'The coordinators responsible for bringing every aspect of the convention together.',
+    members: [
+      {
+        name: 'Athira Haridas K V',
+        role: 'Events Coordinator',
+        image: 'events-coordinator.jpg',
+      },
+      {
+        name: 'Mofaq Asfar A',
+        role: 'Events Coordinator',
+        image: 'events-coordinator2.jpg',
+      },
+      {
+        name: 'Anagha K',
+        role: 'Design Coordinator',
+        image: 'design-coordinator.jpg',
+      },
+      {
+        name: 'Jishnu J',
+        role: 'Publicity Coordinator',
+        image: 'publicity-coordinator.jpg',
+      },
+      {
+        name: 'Amjum Shareef A S',
+        role: 'Publicity Coordinator',
+        image: 'publicity-coordinator2.jpg',
+      },
+      {
+        name: 'Anirudh R',
+        role: 'Finance Coordinator',
+        image: 'finance-coordinator.jpg',
+      },
+      {
+        name: 'Sandra H Menon',
+        role: 'Finance Coordinator',
+        image: 'finance-coordinator2.jpg',
+      },
+      {
+        name: 'Sreenath K',
+        role: 'Technical Coordinator',
+        image: 'technical-coordinator.jpg',
+      },
+    ],
+  },
+  {
+    title: 'Web-Dev Team',
+    description: 'The brains behind this dynamic and advanced full-stack web app.',
+    members: [
+      {
+        name: 'Mithun',
+        role: 'Backend',
+        image: 'backend.jpg',
+      },
+      {
+        name: 'Arjun',
+        role: 'Frontend',
+        image: 'frontend.jpg',
+      },
+      {
+        name: 'Kaladharan Lal',
+        role: 'System Design',
+        image: 'chairperson.jpg',
+      },
+    ],
+  },
+];
+
+function TeamMemberCard({ member }) {
+  const imageUrl =
+    `${import.meta.env.BASE_URL}images/team/${member.image}`;
+
+  return (
+    <article className="team-member-card">
+      <div className="team-member-image">
+        <img
+          src={imageUrl}
+          alt={member.name}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
+
+      <div className="team-member-info">
+        <h3>{member.name}</h3>
+        <span>{member.role}</span>
+      </div>
+    </article>
+  );
+}
+
+export function TeamPage() {
+  return (
+    <>
+      <PageTitle
+        kicker="The People Behind Parallax"
+        title={
+          <>
+            Behind every great event
+            <br />
+            <em>is a great team.</em>
+          </>
+        }
+        desc="Meet the people whose dedication, teamwork and vision brought Parallax to life."
+      />
+
+      <section className="team-page">
+        {TEAM_GROUPS.map((group, index) => (
+          <section
+            className="team-group"
+            key={group.title}
+          >
+            <div className="team-group-heading">
+              <span className="team-index">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+
+              <div>
+                <h2>{group.title}</h2>
+                <p>{group.description}</p>
+              </div>
+            </div>
+
+            <div className="team-grid">
+              {group.members.map((member) => (
+                <TeamMemberCard
+                  key={member.role}
+                  member={member}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </section>
+    </>
+  );
+}
+
 export function ContactPage() {
   const { edition } = useSite();
   const email = edition?.contactEmail || 'iste@nssce.ac.in';
@@ -1705,6 +1935,7 @@ export function Footer() {
           ['Venue', '/venue'],
           ['FAQ', '/faq'],
           ['Contact', '/contact'],
+          ['Meet the Team', '/team'],
           ['Portal', '/portal'],
         ].map(([label, to]) => (
           <Link key={to} to={to}>
