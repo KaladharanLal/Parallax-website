@@ -237,7 +237,7 @@ export default function HeroOdyssey({
             </span>
             <span className="ho-facts-separator" aria-hidden="true" style={{ display: "none" }}>  •  </span>
             <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
-              20th & 21st March
+              8 & 9 January 2027
             </span>
             <span className="ho-facts-separator" aria-hidden="true" style={{ display: "none" }}>  •  </span>
             <span className="tf-parallax-fg" style={{ background: "transparent", border: "none", boxShadow: "none", opacity: 0.5, display: "block", whiteSpace: "nowrap" }}>
