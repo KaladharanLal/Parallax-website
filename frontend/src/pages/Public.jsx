@@ -347,8 +347,8 @@ function PreviewCard({ kicker, title, copy, meta, cta, to, image, eager = false 
         <p className="px-card-copy">{copy}</p>
         {meta ? <span className="px-card-meta">{meta}</span> : null}
         <span className="px-card-cta">
-          {cta}
-          <ArrowRight size={12} strokeWidth={2.2} aria-hidden="true" />
+          <span>{cta}</span>
+          <ArrowUpRight size={13} strokeWidth={2.2} aria-hidden="true" />
         </span>
       </div>
     </Link>

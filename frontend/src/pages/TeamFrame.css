@@ -28,6 +28,7 @@
 
 .team-member-card.is-featured {
   position: relative;
+  width: 100%;
   aspect-ratio: 1034 / 1521;
   overflow: visible;
   border: 0;
