@@ -4332,10 +4332,10 @@ p, .prose-grid p, .intro-text p, .venue-copy p {
 
 /* Frosted Glass Navbar Header */
 .nav {
-  background: rgba(8, 10, 15, 0.82) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
 }
 
 /* Apple Pro Typography Nuances */
@@ -6353,13 +6353,14 @@ p {
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.62);
   margin: 0 0 20px;
-  flex-grow: 1;
+  flex-grow: 0;
 }
 
 .contact-channel-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  margin-top: auto;
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;

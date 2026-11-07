@@ -103,10 +103,12 @@ export default function MascotProvider() {
         type="button"
         className="mascot-show"
         onClick={() => settings.setHidden(false)}
-        aria-label="Show the Parallax guide"
+        aria-label="Show the Analogue Interface"
       >
-        <Sparkles size={14} strokeWidth={2} aria-hidden="true" />
-        <span>Show guide</span>
+        <span className="mascot-show-icon" aria-hidden="true">
+          <Sparkles size={13} strokeWidth={1.8} />
+        </span>
+        <span className="mascot-show-label">Guide</span>
       </button>
     );
   }

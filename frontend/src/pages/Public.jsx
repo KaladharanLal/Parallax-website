@@ -53,6 +53,8 @@ import './EventCard.css';
 import './HomePreview.css';
 import './TeamFrame.css';
 import HeroOdyssey from '../components/HeroOdyssey.jsx';
+import PageScene from '../components/PageScene.jsx';
+import { MascotEasterEggBubble, useMascotEasterEgg } from '../components/MascotEasterEgg.jsx';
 
 const LOGO = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/logos/logo.png`;
 const GLOBE = `${import.meta.env.BASE_URL}images/Parallax Brochure Design Assets/Parallax Design Utilities/modified assets/globe.svg`;
@@ -74,6 +76,18 @@ const EVENT_FRAME = `${import.meta.env.BASE_URL}images/event_frame.png`;
 const SCHEDULE_ART = `${import.meta.env.BASE_URL}images/schedule_img.webp`;
 const EVENTS_ART = `${import.meta.env.BASE_URL}images/event.webp`;
 const ABOUT_ART = `${import.meta.env.BASE_URL}images/about.webp`;
+
+// Homepage scene: the animated rooftop backdrop and the character that stands
+// at the base of the three framed cards.
+const SCENE_BG = `${import.meta.env.BASE_URL}images/bg.gif`;
+const SCENE_MASCOT = `${import.meta.env.BASE_URL}images/mascot.gif`;
+
+// Inner page scenes: the events catalogue uses the arena with the event
+// character, the remaining pages share the valley backdrop and mascot.
+const ARENA_ART = `${import.meta.env.BASE_URL}images/arena.png`;
+const EVENT_SCENE_ART = `${import.meta.env.BASE_URL}images/event.png`;
+const BACKGROUND_ART = `${import.meta.env.BASE_URL}images/background.png`;
+const MASCOT_ART = `${import.meta.env.BASE_URL}images/mascot.png`;
 
 function CategoryIcon({ category, size = 30 }) {
   const cat = (category || '').toLowerCase();
@@ -364,7 +378,6 @@ function PreviewCard({
         <img src={image} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />
       </div>
       <div className="px-card-scrim" aria-hidden="true" />
-      <div className="px-card-sheen" aria-hidden="true" />
       <img
         className="px-card-frame"
         src={MAIN_FRAME}
@@ -613,13 +626,43 @@ function PassHighlightSection({ policy }) {
   const includedCount = policy?.includedEventCount || 3;
   const priceRupees = Math.round((policy?.passPricePaise || 35000) / 100);
   const valueCap = money(policy?.includedValueCapPaise || 45000);
+  const sceneRef = useRef(null);
+
+  // The pass sits inside a scene like the sections above it: artwork behind,
+  // the ticket in front, both scrubbing at different speeds.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    const ctx = gsap.context(() => {
+      const trigger = { trigger: scene, start: 'top bottom', end: 'bottom top', scrub: true };
+      gsap.fromTo(
+        '.pass-scene-bg',
+        { yPercent: -7 },
+        { yPercent: 7, ease: 'none', scrollTrigger: trigger },
+      );
+      gsap.fromTo(
+        '.pass-scene-card',
+        { yPercent: 5 },
+        { yPercent: -5, ease: 'none', scrollTrigger: trigger },
+      );
+    }, scene);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <>
-      <section className="apple-pass-section tf-parallax-section">
+    <section className="apple-pass-section pass-scene" ref={sceneRef}>
+      <div className="pass-scene-bg" aria-hidden="true">
+        <img src={PARALLAX_BG_VAULT} alt="" decoding="async" />
+      </div>
+      <div className="pass-scene-veil" aria-hidden="true" />
+      <div className="pass-scene-floor" aria-hidden="true" />
+      <div className="pass-scene-card">
         <HolographicTicket />
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
 
@@ -651,6 +694,8 @@ export function Home() {
         86_400_000,
     ),
   );
+
+  const { message: eggMessage, onMascotTap } = useMascotEasterEgg();
 
   // Initialize hardware-accelerated parallax layer scrub down the page
   useParallaxScroll();
@@ -702,7 +747,7 @@ export function Home() {
             facts={[
               `${days} days`,
               dateRange(edition.startsAt, edition.endsAt),
-              `${edition.venue}, ${edition.city}`,
+              placeLabel(edition.venue, edition.city),
             ]}
           />
         </div>
@@ -710,10 +755,25 @@ export function Home() {
       {/* Three framed entry points into the convention. The full catalogue
           lives on /events so the homepage stays a preview. */}
       <section className="px-preview" id="discover" aria-labelledby="px-preview-title">
-        <div className="px-preview-inner">
+        <div className="px-stage-bg" aria-hidden="true">
+          <img src={SCENE_BG} alt="" decoding="async" />
+        </div>
+        <div className="px-stage-veil" aria-hidden="true" />
+        <img
+          className="px-stage-mascot"
+          src={SCENE_MASCOT}
+          alt=""
+          onClick={onMascotTap}
+          draggable="false"
+          decoding="async"
+        />
+        <MascotEasterEggBubble message={eggMessage} />
+
+        <div className="px-stage-inner">
           <header className="px-preview-head">
+            <span className="px-preview-kicker">Parallax 2026 · Orientation</span>
             <h2 id="px-preview-title">
-              What's <em>inside.</em>
+              Pick your <em>path.</em>
             </h2>
           </header>
 
@@ -723,7 +783,7 @@ export function Home() {
               mascotHover="Who runs Parallax, where it happens and what it covers."
               kicker="01 / The Edition"
               title="About Parallax"
-              copy={`${edition.name} is the ${edition.organizer || 'ISTE'} convention at ${edition.host || 'NSSCE'}.`}
+              copy={`${edition.name} is the ${edition.organizer || 'ISTE'} convention hosted at ${edition.host || 'NSSCE'}.`}
               cta="Read more"
               to="/about"
               image={ABOUT_ART}
@@ -733,7 +793,7 @@ export function Home() {
               mascotHover="Both days, every session, with times and rooms."
               kicker="02 / The Programme"
               title="Schedule"
-              copy="Times, rooms and rounds for both days."
+              copy="Every session, round and room across both convention days."
               cta="See the schedule"
               to="/schedule"
               image={SCHEDULE_ART}
@@ -743,8 +803,8 @@ export function Home() {
               mascotHover="Hackathons, hardware builds, design sprints and paper sessions."
               kicker="03 / The Competitions"
               title="Events"
-              copy="Hackathons, hardware builds, design sprints and papers."
-              meta={`${eventTotal ?? 0} events in ${categoryTotal ?? 0} categories`}
+              copy="Hackathons, hardware builds, design sprints and paper sessions."
+              meta={`${eventTotal ?? 0} events · ${categoryTotal ?? 0} categories`}
               cta="See all events"
               to="/events"
               image={EVENTS_ART}
@@ -783,6 +843,23 @@ export function Home() {
   );
 }
 
+function placeLabel(...parts) {
+  const seen = new Set();
+  return parts
+    .filter(Boolean)
+    .join(', ')
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => {
+      if (!part) return false;
+      const key = part.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join(', ');
+}
+
 export function About() {
   const { edition, policy } = useSite();
   return (
@@ -796,7 +873,7 @@ export function About() {
             <em>{edition?.name || 'Parallax 2026'}.</em>
           </>
         }
-        desc={`${edition?.organizer || 'ISTE'} brings the convention to ${edition?.host || 'NSSCE'}, ${edition?.city || 'Palakkad'}. Two days, one campus.`}
+        desc={`${edition?.organizer || 'ISTE'} brings the convention to ${placeLabel(edition?.host, edition?.city) || 'NSS College of Engineering, Palakkad'}. Two days, one campus.`}
       />
       <section className="section prose-grid">
         <HudFrame as="article" className="about-main-card">
@@ -804,7 +881,7 @@ export function About() {
           <h2>Two days of student engineering.</h2>
           <p>
             {edition?.name || 'Parallax 2026'} is run by the {edition?.organizer || 'ISTE'} chapter
-            at {edition?.host || 'NSSCE'}, {edition?.city || 'Palakkad'}. Individuals and teams
+            at {placeLabel(edition?.host, edition?.city) || 'NSS College of Engineering'}. Individuals and teams
             build, compete and present across both days.
           </p>
           <p>
@@ -881,7 +958,8 @@ export function EventsPage() {
   const dayGroups = groupEventsByDay(events);
 
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={ARENA_ART} mascot={EVENT_SCENE_ART} wide>
       <PageTitle
         kicker="Events"
         title={
@@ -893,6 +971,7 @@ export function EventsPage() {
         }
         desc="Search by name, category or format."
       />
+      </PageScene>
       <div className="exc-shell">
         <section className="section directory exc-catalogue">
           <div className="filters">
@@ -1012,13 +1091,9 @@ export function EventsPage() {
               </Button>
             </Empty>
           )}
-          <p className="notice">
-            <ShieldCheck size={16} strokeWidth={1.5} /> Student eligibility is verified in the
-            participant portal, either by roster match, institutional email or a reviewed document.
-          </p>
         </section>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1221,7 +1296,8 @@ export function PassPage() {
   const valueCap = money(policy?.includedValueCapPaise || 45000);
 
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="Pass"
         title={
@@ -1233,6 +1309,7 @@ export function PassPage() {
         }
         desc="Lunch included. Pick your events, add more if you want."
       />
+      </PageScene>
 
       <section className="section apple-pass-page-section">
         <div className="apple-pass-page-grid">
@@ -1342,7 +1419,7 @@ export function PassPage() {
           </HudFrame>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -1366,7 +1443,8 @@ export function SchedulePage() {
   const totalSessions = days.reduce((sum, d) => sum + (d.items?.length || 0), 0);
 
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="Schedule"
         title={
@@ -1386,6 +1464,7 @@ export function SchedulePage() {
           ) : null
         }
       />
+      </PageScene>
       <section className="section apple-schedule-section">
         {schedule.loading ? <Loading label="Loading schedule" rows={3} /> : null}
         {schedule.error ? <ErrorBox error={schedule.error} onRetry={schedule.reload} /> : null}
@@ -1397,7 +1476,7 @@ export function SchedulePage() {
         ) : null}
         <ScheduleBoard days={days} />
       </section>
-    </>
+    </div>
   );
 }
 
@@ -1405,7 +1484,8 @@ export function VenuePage() {
   const { edition } = useSite();
   if (!edition) return <Loading label="Loading venue details" rows={2} />;
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="Venue"
         title={
@@ -1415,8 +1495,9 @@ export function VenuePage() {
             <em>{edition?.city?.split(',')[0] || 'Palakkad'}.</em>
           </>
         }
-        desc={`${edition?.venue || 'Campus'}, ${edition?.city || 'Palakkad'}.`}
+        desc={`${placeLabel(edition?.venue, edition?.city) || 'NSSCE Campus, Palakkad'}.`}
       />
+      </PageScene>
       <section className="section venue-grid">
         <HudFrame as="article" className="venue-map-card">
           <div className="map-toolbar">
@@ -1491,7 +1572,7 @@ export function VenuePage() {
           </div>
         </HudFrame>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -1543,7 +1624,8 @@ export function FAQPage() {
   ];
 
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="FAQ"
         title={
@@ -1555,6 +1637,7 @@ export function FAQPage() {
         }
         desc="Passes, events, verification and refunds."
       />
+      </PageScene>
       <section className="section apple-faq-section">
         <div className="apple-faq-list">
           {rows.map(([question, answer]) => (
@@ -1572,7 +1655,7 @@ export function FAQPage() {
           ))}
         </div>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -1764,7 +1847,8 @@ function TeamMemberCard({ member }) {
 
 export function TeamPage() {
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="Team"
         title={
@@ -1776,6 +1860,7 @@ export function TeamPage() {
         }
         desc="Faculty, student leads and the web team."
       />
+      </PageScene>
 
       <section className="team-page">
         {TEAM_GROUPS.map((group) => (
@@ -1795,7 +1880,7 @@ export function TeamPage() {
           </section>
         ))}
       </section>
-    </>
+    </div>
   );
 }
 
@@ -1828,7 +1913,8 @@ export function ContactPage() {
   };
 
   return (
-    <>
+    <div className="page-scene-page">
+      <PageScene bg={BACKGROUND_ART} mascot={MASCOT_ART}>
       <PageTitle
         kicker="Contact"
         title={
@@ -1849,6 +1935,7 @@ export function ContactPage() {
           </div>
         }
       />
+      </PageScene>
 
       <section className="section contact-section">
         {/* Touchpoint Cards Grid */}
@@ -1862,7 +1949,7 @@ export function ContactPage() {
               <span className="contact-channel-tag">Email</span>
               <h3 className="contact-channel-title">Email the organisers</h3>
               <p className="contact-channel-desc">
-                Passes, partnerships, certificates and anything else.
+                Passes, team entries, certificates and press.
               </p>
               <a href={`mailto:${email}`} className="contact-channel-link">
                 <span>{email}</span>
@@ -1880,8 +1967,8 @@ export function ContactPage() {
               <span className="contact-channel-tag">Campus</span>
               <h3 className="contact-channel-title">Host campus</h3>
               <p className="contact-channel-desc">
-                {edition?.host || 'NSS College of Engineering'}, {edition?.city || 'Palakkad'}.
-                Desk at the auditorium.
+                {placeLabel(edition?.host, edition?.city) || 'NSS College of Engineering'}.
+                Desk at the main auditorium.
               </p>
               <Link to="/venue" className="contact-channel-link">
                 <span>Campus Location &amp; Directions</span>
@@ -1957,7 +2044,7 @@ export function ContactPage() {
                   id="contact-name"
                   type="text"
                   className="contact-input"
-                  placeholder="e.g. Warner Stark"
+                  placeholder="e.g. Analogue Interface"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -2025,11 +2112,8 @@ export function ContactPage() {
           <div className="contact-faq-banner-content">
             <HelpCircle size={22} strokeWidth={1.8} className="contact-faq-icon" />
             <div>
-              <h4>Looking for instant answers?</h4>
-              <p>
-                Common questions about pass validity, lunch inclusions, team member rules, and
-                cancellations are documented in the FAQ.
-              </p>
+              <h4>Most answers are already written</h4>
+              <p>Pass validity, lunch, team size and cancellations.</p>
             </div>
           </div>
           <Link to="/faq" className="contact-faq-btn">
@@ -2038,7 +2122,7 @@ export function ContactPage() {
           </Link>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -2058,9 +2142,9 @@ export function Footer() {
         <div className="footer-host">
           <img src={ISTE} alt={`${edition?.organizer || 'ISTE'} emblem`} />
           <span>
-            Hosted by {edition?.host || 'NSSCE'}
+            Hosted by {(edition?.host || 'NSS College of Engineering').split(',')[0]}
             <br />
-            {edition?.city || 'Palakkad'}
+            {edition?.city || 'Palakkad, Kerala'}
           </span>
         </div>
       </div>

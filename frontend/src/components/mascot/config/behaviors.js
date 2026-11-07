@@ -53,7 +53,7 @@ export const MASCOT_ROUTES = [
   {
     id: 'home',
     match: /^\/$/,
-    line: 'Hey, I\'m Parallax! Scroll down, I\'ll show you around.',
+    line: 'Hey, I\'m your guide! Scroll down, I\'ll show you around.',
     ambient: 'Two days, one pass. Start wherever looks fun.',
     tips: [
       'Edition, schedule, competitions. That\'s the whole site, really.',

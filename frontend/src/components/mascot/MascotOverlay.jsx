@@ -4,6 +4,7 @@ import MascotCanvas from './MascotCanvas.jsx';
 import SpeechBubble from './SpeechBubble.jsx';
 import { MascotBrain, REST_YAW } from './MascotBrain.js';
 import { TargetRegistry } from './TargetRegistry.js';
+import { pickEasterEgg } from '../MascotEasterEgg.jsx';
 import { resolveRouteBehavior } from './config/behaviors.js';
 
 function computeLayout() {
@@ -39,6 +40,8 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
   const [gesture, setGesture] = useState(0);
   const [failed, setFailed] = useState(false);
 
+  const tapCountRef = useRef(0);
+  const eggTimerRef = useRef(null);
   const brainRef = useRef(null);
   const registryRef = useRef(null);
   const settingsRef = useRef(settings);
@@ -142,6 +145,25 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
     };
   }, []);
 
+  useEffect(
+    () => () => {
+      if (eggTimerRef.current) clearTimeout(eggTimerRef.current);
+    },
+    [],
+  );
+
+  // Four taps on the guide turn the usual reaction into an easter egg.
+  const handleMascotTap = () => {
+    brainRef.current?.interact();
+    tapCountRef.current += 1;
+    if (tapCountRef.current < 4) return;
+
+    tapCountRef.current = 0;
+    setBubble(pickEasterEgg());
+    if (eggTimerRef.current) clearTimeout(eggTimerRef.current);
+    eggTimerRef.current = setTimeout(() => setBubble(null), 8000);
+  };
+
   const handleFail = () => {
     setFailed(true);
     onFail?.();
@@ -184,7 +206,7 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
           <div
             className="mascot-hit"
             aria-hidden="true"
-            onClick={() => brainRef.current?.interact()}
+            onClick={handleMascotTap}
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}
           />
@@ -193,7 +215,7 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
             type="button"
             className="mascot-hide"
             onClick={() => settings.setHidden(true)}
-            aria-label="Hide the Parallax guide"
+            aria-label="Hide the Analogue Interface"
             title="Hide guide"
           >
             <X size={12} strokeWidth={2.4} aria-hidden="true" />

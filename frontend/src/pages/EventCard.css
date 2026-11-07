@@ -402,10 +402,11 @@
   color: #f9b4b4;
 }
 
-/* Closed registrations stay in the catalogue but recede: the poster blurs and
-   desaturates while the shell, title and fee remain legible. */
+/* Closed registrations stay in the catalogue but recede: the poster desaturates
+   and dims while the shell, title and fee remain legible. No blur is used, so a
+   card never looks out of focus while its registration is still open. */
 .exc.is-closed .exc-poster {
-  filter: grayscale(0.92) brightness(0.58) blur(1.4px);
+  filter: grayscale(0.92) brightness(0.62);
 }
 
 .exc.is-closed .exc-poster::after {
@@ -427,30 +428,6 @@
 
 .exc.is-closed:hover {
   transform: none;
-}
-
-/* ---------------------------------------------------------------- reveal -- */
-
-@keyframes frame-rise {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-/* Scroll-driven so no observer can leave content hidden; browsers without
-   view timelines simply render the cards in place. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    [data-reveal] {
-      animation: frame-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 3% cover 26%;
-    }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
