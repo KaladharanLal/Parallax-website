@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import MascotCanvas from './MascotCanvas.jsx';
 import SpeechBubble from './SpeechBubble.jsx';
 import { MascotBrain, REST_YAW } from './MascotBrain.js';
 import { TargetRegistry } from './TargetRegistry.js';
-import { pickEasterEgg } from '../MascotEasterEgg.jsx';
+import {
+  MASCOT_EGG_EVENT,
+  formatEggText,
+  pickEasterEgg,
+} from '../MascotEasterEgg.jsx';
 import { resolveRouteBehavior } from './config/behaviors.js';
 
 function computeLayout() {
@@ -152,6 +156,23 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
     [],
   );
 
+  const speakEgg = useCallback(() => {
+    const text = formatEggText(pickEasterEgg());
+    if (brainRef.current) {
+      brainRef.current.say(text, 'user', 7500);
+      return;
+    }
+    setBubble({ text });
+    if (eggTimerRef.current) clearTimeout(eggTimerRef.current);
+    eggTimerRef.current = setTimeout(() => setBubble(null), 7500);
+  }, []);
+
+  // Keyboard ("midhun", arrows) and swipe triggers from the provider.
+  useEffect(() => {
+    window.addEventListener(MASCOT_EGG_EVENT, speakEgg);
+    return () => window.removeEventListener(MASCOT_EGG_EVENT, speakEgg);
+  }, [speakEgg]);
+
   // Four taps on the guide turn the usual reaction into an easter egg.
   const handleMascotTap = () => {
     brainRef.current?.interact();
@@ -159,9 +180,7 @@ export default function MascotOverlay({ pathname, settings, onFail }) {
     if (tapCountRef.current < 4) return;
 
     tapCountRef.current = 0;
-    setBubble(pickEasterEgg());
-    if (eggTimerRef.current) clearTimeout(eggTimerRef.current);
-    eggTimerRef.current = setTimeout(() => setBubble(null), 8000);
+    speakEgg();
   };
 
   const handleFail = () => {

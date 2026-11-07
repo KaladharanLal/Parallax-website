@@ -10,7 +10,7 @@ export const EASTER_EGGS = [
     text: 'Made by Midhun K M. I just stand here and look deep.',
   },
   {
-    text: 'Midhun K M built me. Say Hi!:',
+    text: 'Midhun K M built me. Say hi:',
     link: { href: 'https://midhunkm.pages.dev/', label: 'midhunkm.pages.dev' },
   },
   {
@@ -38,6 +38,15 @@ export function pickEasterEgg() {
   return EASTER_EGGS[Math.floor(Math.random() * EASTER_EGGS.length)];
 }
 
+/** Fired by the global keyboard/swipe triggers; any egg surface listens for it. */
+export const MASCOT_EGG_EVENT = 'parallax:mascot-egg';
+
+/** Bubbles are plain text, so a link is spelled out for the guide to read. */
+export function formatEggText(egg) {
+  if (!egg) return '';
+  return egg.link ? `${egg.text} ${egg.link.label}` : egg.text;
+}
+
 export function useMascotEasterEgg(tapsNeeded = 4) {
   const [message, setMessage] = useState(null);
   const taps = useRef(0);
@@ -53,12 +62,19 @@ export function useMascotEasterEgg(tapsNeeded = 4) {
     timer.current = setTimeout(() => setMessage(null), 8000);
   }, [tapsNeeded]);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const onEgg = () => {
+      setMessage(pickEasterEgg());
       if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
+      timer.current = setTimeout(() => setMessage(null), 8000);
+    };
+
+    window.addEventListener(MASCOT_EGG_EVENT, onEgg);
+    return () => {
+      window.removeEventListener(MASCOT_EGG_EVENT, onEgg);
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
 
   return { message, onMascotTap };
 }

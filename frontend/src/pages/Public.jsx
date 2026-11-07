@@ -1766,8 +1766,27 @@ const TEAM_GROUPS = [
   },
 ];
 
+const TEAM_HOVER_LINES = {
+  'Midhun K M':
+    'That one is Midhun K M. He built me, front to back. His other work is at midhunkm.pages.dev.',
+  'Arjun M L': 'Arjun M L did the frontend. Personal site: arjc.github.io.',
+};
+
+function teamSlug(name = '') {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function TeamMemberCard({ member }) {
   const imageUrl = `${import.meta.env.BASE_URL}images/team/${member.image}`;
+  const mascotProps = {
+    'data-mascot-target': `team-${teamSlug(member.name)}`,
+    'data-mascot-label': member.name,
+    'data-mascot-hover':
+      TEAM_HOVER_LINES[member.name] || `${member.name}, ${member.role} on this year's crew.`,
+  };
 
   if (member.featured) {
     const CardTag = member.link ? 'a' : 'article';
@@ -1784,6 +1803,7 @@ function TeamMemberCard({ member }) {
       <CardTag
         className={`team-member-card is-featured${member.link ? ' is-linked' : ''}`}
         {...cardProps}
+        {...mascotProps}
       >
         <div className="tm-frame">
           <div
@@ -1825,7 +1845,7 @@ function TeamMemberCard({ member }) {
   }
 
   return (
-    <article className="team-member-card">
+    <article className="team-member-card" {...mascotProps}>
       <div className="team-member-image">
         <img
           src={imageUrl}

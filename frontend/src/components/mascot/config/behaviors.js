@@ -264,10 +264,28 @@ export const MASCOT_ROUTES = [
     id: 'team',
     match: /^\/team$/,
     line: 'Students built this whole thing. Yes, really.',
-    ambient: 'Design, frontend, backend, ops. All students, many late nights.',
+    ambient: 'Hover a face and I will tell you who they are.',
     tips: [
       'These are the people who built and run all of this.',
-      'Questions about how it was built? Ask them through the contact page.',
+      'Hover a card for names. I do the remembering for you.',
+      'Questions about how it was built? Ask through the contact page.',
+    ],
+    group: {
+      prefix: 'team-',
+      message: 'Pick a face, I will introduce them.',
+      action: 'point',
+      cooldownMs: 12000,
+      maxShows: 99,
+    },
+    behaviors: [
+      {
+        target: 'team-midhun-k-m',
+        message: 'That one is the reason I exist. Go say hi.',
+        action: 'point',
+        cooldownMs: 60000,
+        maxShows: 1,
+        priority: 1,
+      },
     ],
   },
   {

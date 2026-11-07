@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { useMascotSettings } from './useMascotSettings.js';
 import { resolveRouteBehavior } from './config/behaviors.js';
+import { attachEggTriggers } from './eggTriggers.js';
+import { MASCOT_EGG_EVENT } from '../MascotEasterEgg.jsx';
 import './mascot.css';
 
 const importOverlay = () => import('./MascotOverlay.jsx');
@@ -48,6 +50,14 @@ export default function MascotProvider() {
   const [failed, setFailed] = useState(false);
   const [Overlay, setOverlay] = useState(null);
   const routeEnabled = Boolean(resolveRouteBehavior(pathname));
+
+  // Fun triggers live here so they keep working even while the 3D chunk is
+  // still loading; whoever is on screen answers the event.
+  useEffect(() => {
+    return attachEggTriggers(() => {
+      window.dispatchEvent(new CustomEvent(MASCOT_EGG_EVENT, { detail: { source: 'trigger' } }));
+    });
+  }, []);
 
   useEffect(() => {
     if (!supported || failed || settings.hidden || Overlay || !routeEnabled) {
